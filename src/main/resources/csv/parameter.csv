@@ -1,0 +1,6 @@
+id;owner.id;data;mandatory;type;mode;secured
+service:vm:vcloud:url;service:vm:vcloud;;true;TEXT;;
+service:vm:vcloud:user;service:vm:vcloud;;true;TEXT;;true
+service:vm:vcloud:password;service:vm:vcloud;;true;TEXT;;true
+service:vm:vcloud:organization;service:vm:vcloud;;true;TEXT;;
+service:vm:vcloud:id;service:vm:vcloud;;true;TEXT;;

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<QueryResultRecords xmlns="http://www.vmware.com/vcloud/v1.5" total="3" pageSize="10" page="1" name="vm" type="application/vnd.vmware.vcloud.query.idrecords+xml" href="https://api.flexible-computing-advanced.orange-business.com/api/query?type=vm&amp;page=1&amp;pageSize=10&amp;format=idrecords&amp;filter=name==*sc*&amp;sortAsc=name&amp;fields=name,guestOs" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.vmware.com/vcloud/v1.5 http://api.flexible-computing-advanced.orange-business.com/api/v1.5/schema/master.xsd">
+    <Link rel="alternate" type="application/vnd.vmware.vcloud.query.references+xml" href="https://api.flexible-computing-advanced.orange-business.com/api/query?type=vm&amp;page=1&amp;pageSize=10&amp;format=references&amp;filter=name==*sc*&amp;sortAsc=name&amp;fields=name,guestOs"/>
+    <Link rel="alternate" type="application/vnd.vmware.vcloud.query.records+xml" href="https://api.flexible-computing-advanced.orange-business.com/api/query?type=vm&amp;page=1&amp;pageSize=10&amp;format=records&amp;filter=name==*sc*&amp;sortAsc=name&amp;fields=name,guestOs"/>
+    <VMRecord name="sca" guestOs="CentOS 4/5/6/7 (64-bit)" id="urn:vcloud:vm:75aa69b4-8cff-40cd-9338-9abafc7d5935"/>
+    <VMRecord name="scm" guestOs="CentOS 4/5/6/7 (64-bit)" id="urn:vcloud:vm:1259400c-9ddd-4627-bea3-3e11a683501c"/>
+    <VMRecord name="ssc" guestOs="CentOS 4/5/6/7 (64-bit)" id="urn:vcloud:vm:2f019727-cd24-44d4-8be2-f02e74978c76"/>
+</QueryResultRecords>
