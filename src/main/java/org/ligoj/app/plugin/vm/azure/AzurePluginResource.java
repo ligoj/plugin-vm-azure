@@ -321,7 +321,7 @@ public class AzurePluginResource extends AbstractXmlApiToolPluginResource implem
 	public List<Vm> findAllByName(@PathParam("node") final String node, @PathParam("criteria") final String criteria)
 			throws IOException, SAXException, ParserConfigurationException {
 		// Get the VMs and parse them
-		return toVms(getVCloudResource(nodeResource.getParametersAsMap(node),
+		return toVms(getVCloudResource(pvResource.getNodeParameters(node),
 				"/query?type=vm&format=idrecords&filter=name==*" + criteria + "*&sortAsc=name&fields=name,guestOs&pageSize=10"));
 	}
 
