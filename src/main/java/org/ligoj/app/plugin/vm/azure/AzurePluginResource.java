@@ -31,6 +31,7 @@ import org.apache.commons.lang3.math.NumberUtils;
 import org.ligoj.app.api.SubscriptionStatusWithData;
 import org.ligoj.app.plugin.vm.VmResource;
 import org.ligoj.app.plugin.vm.VmServicePlugin;
+import org.ligoj.app.plugin.vm.dao.VmScheduleRepository;
 import org.ligoj.app.plugin.vm.model.VmOperation;
 import org.ligoj.app.plugin.vm.model.VmStatus;
 import org.ligoj.app.resource.plugin.AbstractXmlApiToolPluginResource;
@@ -246,6 +247,9 @@ public class AzurePluginResource extends AbstractXmlApiToolPluginResource implem
 	@Autowired
 	private CurlCacheToken curlCacheToken;
 
+	@Autowired
+	private VmScheduleRepository vmScheduleRepository;
+
 	@Value("${saas.service-vm-vcloud-auth-retries:2}")
 	private int retries;
 
@@ -460,9 +464,10 @@ public class AzurePluginResource extends AbstractXmlApiToolPluginResource implem
 	}
 
 	@Override
-	public SubscriptionStatusWithData checkSubscriptionStatus(final String node, final Map<String, String> parameters) throws Exception {
+	public SubscriptionStatusWithData checkSubscriptionStatus(final int subscription, final String node, final Map<String, String> parameters) throws Exception { // NOSONAR
 		final SubscriptionStatusWithData status = new SubscriptionStatusWithData();
 		status.put("vm", validateVm(parameters));
+		status.put("schedules", vmScheduleRepository.countBySubscription(subscription));
 		return status;
 	}
 
