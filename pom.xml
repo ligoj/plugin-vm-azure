@@ -4,13 +4,13 @@
 	<parent>
 		<groupId>org.ligoj.api</groupId>
 		<artifactId>plugin-parent</artifactId>
-		<version>1.1.6</version>
+		<version>1.1.7</version>
 		<relativePath />
 	</parent>
 
 	<groupId>org.ligoj.plugin</groupId>
 	<artifactId>plugin-vm-azure</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>1.0.0</version>
 	<packaging>jar</packaging>
 	<name>Ligoj - Plugin VM Azure</name>
 
