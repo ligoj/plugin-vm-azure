@@ -1,0 +1,28 @@
+{
+  "value": [
+    {
+      "name": "Standard_DS1",
+      "numberOfCores": 1,
+      "osDiskSizeInMB": 1047552,
+      "resourceDiskSizeInMB": 7168,
+      "memoryInMB": 3584,
+      "maxDataDiskCount": 4
+    },
+    {
+      "name": "Standard_DS1_v2",
+      "numberOfCores": 1,
+      "osDiskSizeInMB": 1047552,
+      "resourceDiskSizeInMB": 7168,
+      "memoryInMB": 4048,
+      "maxDataDiskCount": 8
+    },
+    {
+      "name": "Standard_DS2",
+      "numberOfCores": 2,
+      "osDiskSizeInMB": 1047552,
+      "resourceDiskSizeInMB": 14336,
+      "memoryInMB": 7168,
+      "maxDataDiskCount": 8
+    }
+  ]
+}

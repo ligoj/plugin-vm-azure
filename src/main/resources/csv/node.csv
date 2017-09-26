@@ -1,2 +1,2 @@
 id;name;refined.id;mode;uiClasses;tag;tagUiClasses
-service:vm:vcloud;vCloud;service:vm;LINK;;;
+service:vm:azure;Azure;service:vm;LINK;;;

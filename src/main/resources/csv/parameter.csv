@@ -1,6 +1,7 @@
 id;owner.id;data;mandatory;type;mode;secured
-service:vm:vcloud:url;service:vm:vcloud;;true;TEXT;;
-service:vm:vcloud:user;service:vm:vcloud;;true;TEXT;;true
-service:vm:vcloud:password;service:vm:vcloud;;true;TEXT;;true
-service:vm:vcloud:organization;service:vm:vcloud;;true;TEXT;;
-service:vm:vcloud:id;service:vm:vcloud;;true;TEXT;;
+service:vm:azure:subscription;service:vm:azure;{"pattern":"[0-9a-z]{8}(-[0-9a-z]{4}){3}-[0-9a-z]{12}"};true;TEXT;;
+service:vm:azure:application;service:vm:azure;{"pattern":"[0-9a-z]{8}(-[0-9a-z]{4}){3}-[0-9a-z]{12}"};true;TEXT;;
+service:vm:azure:key;service:vm:azure;;true;TEXT;;true
+service:vm:azure:tenant;service:vm:azure;{"pattern":"[0-9a-z]{8}(-[0-9a-z]{4}){3}-[0-9a-z]{12}"};true;TEXT;;
+service:vm:azure:resource-group;service:vm:azure;;true;TEXT;;
+service:vm:azure:name;service:vm:azure;;true;TEXT;;

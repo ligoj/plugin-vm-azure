@@ -1,0 +1,77 @@
+{
+  "properties": {
+    "vmId": "vm-id-0",
+    "hardwareProfile": {
+      "vmSize": "Standard_DS1_v2"
+    },
+    "storageProfile": {
+      "imageReference": {
+        "publisher": "Canonical",
+        "offer": "UbuntuServer",
+        "sku": "16.04-LTS",
+        "version": "latest"
+      },
+      "osDisk": {
+        "osType": "Linux",
+        "name": "test1_OsDisk_1_0",
+        "createOption": "FromImage",
+        "caching": "ReadWrite",
+        "managedDisk": {
+          "id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/groupe1/providers/Microsoft.Compute/disks/test1_OsDisk_1_0"
+        }
+      },
+      "dataDisks": []
+    },
+    "osProfile": {
+      "computerName": "test1",
+      "adminUsername": "az-user",
+      "linuxConfiguration": {
+        "disablePasswordAuthentication": false
+      },
+      "secrets": []
+    },
+    "networkProfile": {"networkInterfaces":[{"id":"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/groupe1/providers/Microsoft.Network/networkInterfaces/test1637"}]},
+    "diagnosticsProfile": {
+      "bootDiagnostics": {
+        "enabled": true,
+        "storageUri": "https://groupe1diag863.blob.core.windows.net/"
+      }
+    },
+    "provisioningState": "Succeeded",
+    "instanceView": {
+      "disks": [
+        {
+          "name": "test1_OsDisk_1_0",
+          "statuses": [
+            {
+              "code": "ProvisioningState/succeeded",
+              "level": "Info",
+              "displayStatus": "Provisioning succeeded",
+              "time": "2017-09-15T12:06:42.240944+00:00"
+            }
+          ]
+        }
+      ],
+      "bootDiagnostics": {
+        "consoleScreenshotBlobUri": "https://groupe1diag863.blob.core.windows.net/bootdiagnostics-test1-vm-id-0/test1.vm-id-0.screenshot.bmp",
+        "serialConsoleLogBlobUri": "https://groupe1diag863.blob.core.windows.net/bootdiagnostics-test1-vm-id-0/test1.vm-id-0.serialconsole.log"
+      },
+      "statuses": [
+        {
+          "code": "ProvisioningState/updating",
+          "level": "Info",
+          "displayStatus": "Updating"
+        },
+        {
+          "code": "PowerState/deallocating",
+          "level": "Info",
+          "displayStatus": "VM deallocating"
+        }
+      ]
+    }
+  },
+  "type": "Microsoft.Compute/virtualMachines",
+  "location": "westeurope",
+  "id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/groupe1/providers/Microsoft.Compute/virtualMachines/test1",
+  "name": "test1"
+}

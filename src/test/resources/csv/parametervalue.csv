@@ -1,6 +1,7 @@
 parameter.id;data;node.id;subscription.id!
-service:vm:vcloud:url;http://localhost:8120;service:vm:vcloud:obs-fca-info;
-service:vm:vcloud:user;secret;service:vm:vcloud:obs-fca-info;
-service:vm:vcloud:password;secret;service:vm:vcloud:obs-fca-info;
-service:vm:vcloud:organization;FCA_GFI-INFO-FCA;service:vm:vcloud:obs-fca-info;
-service:vm:vcloud:id;75aa69b4-8cff-40cd-9338-9abafc7d5935;;1
+service:vm:azure:subscription;00000000-0000-0000-0000-000000000000;service:vm:azure:test;
+service:vm:azure:tenant;11112222-3333-4444-5555-666677778888;service:vm:azure:test;
+service:vm:azure:key;secret;service:vm:azure:test;
+service:vm:azure:application;99990000-1111-2222-3333-444455556666;service:vm:azure:test;
+service:vm:azure:resource-group;groupe1;service:vm:azure:test;
+service:vm:azure:name;test1;;1
