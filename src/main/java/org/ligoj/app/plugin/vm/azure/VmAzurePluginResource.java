@@ -276,18 +276,18 @@ public class VmAzurePluginResource extends AbstractXmlApiToolPluginResource impl
 	/**
 	 * Busy provisioning code suffix, yes it's ugly, but lazy.
 	 */
-	public static final String BUSY_CODE = "ing";
+	private static final String BUSY_CODE = "ing";
 	/**
 	 * Undeployed provisioning code.
 	 */
-	public static final String UNDEPLOYED_CODE = "PowerState/deallocated";
+	private static final String UNDEPLOYED_CODE = "PowerState/deallocated";
 
 	/**
 	 * VM code to {@link VmStatus} mapping.
 	 * 
 	 * @see https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/virtualmachines-state
 	 */
-	public static final Map<String, VmStatus> CODE_TO_STATUS = new HashMap<>();
+	private static final Map<String, VmStatus> CODE_TO_STATUS = new HashMap<>();
 	static {
 		CODE_TO_STATUS.put("PowerState/running", VmStatus.POWERED_ON);
 		CODE_TO_STATUS.put("PowerState/starting", VmStatus.POWERED_ON);
@@ -335,11 +335,10 @@ public class VmAzurePluginResource extends AbstractXmlApiToolPluginResource impl
 	 * Cache the API token.
 	 */
 	protected String authenticate(final String tenant, final String principal, final String key) {
-		return curlCacheToken.getTokenCache(VmAzurePluginResource.class, tenant + "##" + principal + "/" + key, k -> {
-
-			// Authentication request
-			return getAccessTokenFromUserCredentials(tenant, principal, key);
-		}, retries, () -> new ValidationJsonException(PARAMETER_KEY, "azure-login"));
+		// Authentication request
+		return curlCacheToken.getTokenCache(VmAzurePluginResource.class, tenant + "##" + principal + "/" + key,
+				k -> getAccessTokenFromUserCredentials(tenant, principal, key), retries,
+				() -> new ValidationJsonException(PARAMETER_KEY, "azure-login"));
 	}
 
 	/**
@@ -564,7 +563,7 @@ public class VmAzurePluginResource extends AbstractXmlApiToolPluginResource impl
 	 * Return the generic VM status from the Azure statuses
 	 */
 	private boolean isDeployed(final List<AzureVmList.VmStatus> statuses) {
-		return statuses.stream().map(AzureVmList.VmStatus::getCode).filter(UNDEPLOYED_CODE::equals).findFirst().isPresent();
+		return statuses.stream().map(AzureVmList.VmStatus::getCode).anyMatch(UNDEPLOYED_CODE::equals);
 	}
 
 	/**
@@ -628,7 +627,7 @@ public class VmAzurePluginResource extends AbstractXmlApiToolPluginResource impl
 	 * Check the server is available with enough permission to query VM.
 	 * Requires "VIRTUAL MACHINE CONTRIBUTOR" permission.
 	 */
-	private void validateAdminAccess(final Map<String, String> parameters) throws Exception {
+	private void validateAdminAccess(final Map<String, String> parameters) {
 		if (getAzureResource(parameters, FIND_VM_URL) == null) {
 			throw new ValidationJsonException(PARAMETER_SUBSCRIPTION, "azure-admin");
 		}
