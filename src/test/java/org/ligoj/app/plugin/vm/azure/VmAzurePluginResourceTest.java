@@ -153,6 +153,7 @@ public class VmAzurePluginResourceTest extends AbstractServerTest {
 
 	private void checkVm(final AzureVm item) {
 		checkItem(item);
+		Assert.assertEquals("westeurope", item.getLocation());
 		Assert.assertEquals(VmStatus.POWERED_ON, item.getStatus());
 		Assert.assertEquals(1, item.getCpu());
 		Assert.assertFalse(item.isBusy());
@@ -435,6 +436,11 @@ public class VmAzurePluginResourceTest extends AbstractServerTest {
 	@Test(expected = NullPointerException.class)
 	public void vmSizeInvalidName() {
 		new VmSize(null);
+	}
+
+	@Test(expected = NullPointerException.class)
+	public void vmSizeInvalidName2() {
+		new VmSize().setName(null);
 	}
 
 	/**

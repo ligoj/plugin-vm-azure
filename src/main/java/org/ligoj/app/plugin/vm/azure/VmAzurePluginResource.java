@@ -346,9 +346,8 @@ public class VmAzurePluginResource extends AbstractXmlApiToolPluginResource impl
 	 * Get the Azure bearer token from the authority.
 	 */
 	private String getAccessTokenFromUserCredentials(final String tenant, final String principal, final String key) {
-		ExecutorService service = null;
+		final ExecutorService service = newExecutorService();
 		try {
-			service = newExecutorService();
 			final AuthenticationContext context = newAuthenticationContext(tenant, service);
 			/*
 			 * Replace {client_id} with ApplicationID and {password} with
