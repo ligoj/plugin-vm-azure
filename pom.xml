@@ -63,7 +63,6 @@
 									<include>com.nimbusds:*</include>
 									<include>net.minidev:*</include>
 									<include>com.github.stephenc.jcip:*</include>
-									<include>com.google.code.gson:*</include>
 								</includes>
 							</artifactSet>
 						</configuration>
