@@ -4,6 +4,7 @@ define({
 		"service:vm:azure:application" : "Application ID",
 		"service:vm:azure:key" : "Application Key",
 		"service:vm:azure:tenant" : "Tenant ID",
+		"service:vm:azure:os" : "OS",
 		"service:vm:azure:name" : "Name",
 		"service:vm:azure:subscription" : "Subscription",
 		"service:vm:azure:location" : "Location",

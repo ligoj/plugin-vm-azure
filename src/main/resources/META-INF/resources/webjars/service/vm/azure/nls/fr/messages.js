@@ -2,6 +2,7 @@ define({
 	"service:vm:azure:portal" : "Portail",
 	"service:vm:azure:application" : "Identifiant d'application",
 	"service:vm:azure:key" : "Clé d'application",
+	"service:vm:azure:tenant" : "Directory ID",
 	"service:vm:azure:name" : "Nom",
 	"service:vm:azure:location" : "Emplacement",
 	"service:vm:azure:subscription" : "Souscription",
