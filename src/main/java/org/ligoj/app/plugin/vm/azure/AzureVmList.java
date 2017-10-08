@@ -55,6 +55,7 @@ public class AzureVmList {
 	@JsonIgnoreProperties(ignoreUnknown = true)
 	public static class AzureVmStorageProfile {
 		private AzureVmOs imageReference;
+		private AzureVmDisk osDisk;
 	}
 
 	/**
@@ -67,7 +68,21 @@ public class AzureVmList {
 		private String publisher;
 		private String offer;
 		private String sku;
+		private String id;
 	}
+
+	/**
+	 * Azure VM Disk OS.
+	 */
+	@Getter
+	@Setter
+	@JsonIgnoreProperties(ignoreUnknown = true)
+	public static class AzureVmDisk {
+		private String osType;
+		private int diskSizeGB;
+	}
+	
+	
 
 	/**
 	 * Azure VM statuses.

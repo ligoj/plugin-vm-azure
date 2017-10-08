@@ -171,6 +171,34 @@ public class VmAzurePluginResourceTest extends AbstractServerTest {
 	}
 
 	@Test
+	public void checkSubscriptionStatusFromImage() throws Exception {
+		prepareMockAuth();
+		// Find a specific VM
+		httpServer.stubFor(get(urlPathEqualTo(COMPUTE_URL + "/test1")).willReturn(aResponse().withStatus(HttpStatus.SC_OK).withBody(
+				IOUtils.toString(new ClassPathResource("mock-server/azure/vm-on-from-image.json").getInputStream(), StandardCharsets.UTF_8))));
+
+		// Expose VM sizes
+		httpServer.stubFor(get(urlPathEqualTo(
+				"/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Compute/locations/westeurope/vmSizes"))
+						.willReturn(aResponse().withStatus(HttpStatus.SC_OK).withBody(IOUtils.toString(
+								new ClassPathResource("mock-server/azure/list-sizes.json").getInputStream(), StandardCharsets.UTF_8))));
+		httpServer.start();
+
+		final VmAzurePluginResource resource = newResource();
+		final SubscriptionStatusWithData nodeStatusWithData = resource.checkSubscriptionStatus(subscription, null,
+				subscriptionResource.getParametersNoCheck(subscription));
+		Assert.assertTrue(nodeStatusWithData.getStatus().isUp());
+		
+		final AzureVm vm = (AzureVm) nodeStatusWithData.getData().get("vm");
+		
+		Assert.assertEquals("vm-id-0", vm.getInternalId());
+		Assert.assertEquals("test1", vm.getId());
+		Assert.assertEquals("Linux (debian9-docker17)", vm.getOs());
+	}
+
+
+
+	@Test
 	public void checkSubscriptionStatusNoSize() throws Exception {
 		prepareMockAuth();
 

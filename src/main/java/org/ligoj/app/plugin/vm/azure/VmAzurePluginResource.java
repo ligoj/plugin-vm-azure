@@ -478,7 +478,14 @@ public class VmAzurePluginResource extends AbstractXmlApiToolPluginResource impl
 
 		// OS
 		final AzureVmOs image = properties.getStorageProfile().getImageReference();
-		result.setOs(image.getOffer() + " " + image.getSku() + " " + image.getPublisher());
+		if (image.getOffer() == null) {
+			// From image
+			result.setOs(properties.getStorageProfile().getOsDisk().getOsType() + " (" + StringUtils.substringAfterLast(image.getId(), "/")
+					+ ")");
+		} else {
+			// From marketplace : provider
+			result.setOs(image.getOffer() + " " + image.getSku() + " " + image.getPublisher());
+		}
 		return result;
 	}
 
