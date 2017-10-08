@@ -37,22 +37,22 @@ define(function () {
 					'service:vm:azure:name', current.renderKey(subscription)
 				],
 				[
-					'serice:vm:os', vm.os
+					'service:vm:os', vm.os
 				],
 				[
 					'service:vm:resources', current.$super('icon')('sliders') + vm.cpu + ' CPU, ' + formatManager.formatSize((vm.ram || 0) * 1024 * 1024)
 				],
 				[
-					'service:vm:azure:resource-group', current.$super('icon')('cube', 'service:vm:azure:resource-group') + subscription.parameters['resource-group']
+					'service:vm:azure:resource-group', current.$super('icon')('cube', 'service:vm:azure:resource-group') + subscription.parameters['service:vm:azure:resource-group']
 				],
 				[
-					'service:vm:azure:subscription', current.$super('icon')('credit-card', 'service:vm:azure:subscription') + subscription.parameters.subscription
+					'service:vm:azure:subscription', current.$super('icon')('credit-card', 'service:vm:azure:subscription') + subscription.parameters['service:vm:azure:subscription']
 				],
 				[
-					'service:vm:azure:subscription', current.$super('icon')('id-badge', 'service:vm:azure:tenant') + subscription.parameters.tenant
+					'service:vm:azure:tenant', current.$super('icon')('id-badge', 'service:vm:azure:tenant') + subscription.parameters['service:vm:azure:tenant']
 				],
 				[
-					'service:vm:azure:location', current.$super('icon')('map-marker', 'service:vm:azure:resource-group') + vm.location
+					'service:vm:azure:location', current.$super('icon')('map-marker', 'service:vm:azure:location') + vm.location
 				]
 			], 1);
 		}
