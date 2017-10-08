@@ -1,6 +1,6 @@
 define({
 	"root" : {
-		"service:vm:azure:portal" : "Portal",
+		"service:vm:azure:portal" : "Portal of this VM",
 		"service:vm:azure:application" : "Application ID",
 		"service:vm:azure:key" : "Application Key",
 		"service:vm:azure:tenant" : "Tenant ID",
