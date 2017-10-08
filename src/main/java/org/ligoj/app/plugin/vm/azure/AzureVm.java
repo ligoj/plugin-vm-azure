@@ -17,4 +17,9 @@ public class AzureVm extends Vm {
 
 	private String location;
 	private String internalId;
+	
+	/**
+	 * Disk size, GB
+	 */
+	private int disk;
 }

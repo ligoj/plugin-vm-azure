@@ -40,7 +40,7 @@ define(function () {
 					'service:vm:os', vm.os
 				],
 				[
-					'service:vm:resources', current.$super('icon')('sliders') + vm.cpu + ' CPU, ' + formatManager.formatSize((vm.ram || 0) * 1024 * 1024)
+					'service:vm:resources', current.$super('icon')('sliders') + vm.cpu + ' CPU, <i class="fa fa-microchip"></i> ' + formatManager.formatSize((vm.ram || 0) * 1024 * 1024) + (vm.disk ? ', <i class="fa fa-database"></i> ' + formatManager.formatSize((vm.disk || 0) * 1024 * 1024) : '') 
 				],
 				[
 					'service:vm:azure:resource-group', current.$super('icon')('cube', 'service:vm:azure:resource-group') + subscription.parameters['service:vm:azure:resource-group']

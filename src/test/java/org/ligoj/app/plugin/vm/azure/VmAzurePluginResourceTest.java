@@ -155,6 +155,7 @@ public class VmAzurePluginResourceTest extends AbstractServerTest {
 		checkItem(item);
 		Assert.assertEquals("westeurope", item.getLocation());
 		Assert.assertEquals(VmStatus.POWERED_ON, item.getStatus());
+		Assert.assertEquals(30, item.getDisk());
 		Assert.assertEquals(1, item.getCpu());
 		Assert.assertFalse(item.isBusy());
 		Assert.assertEquals(4048, item.getRam());

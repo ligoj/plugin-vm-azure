@@ -18,7 +18,8 @@
         "caching": "ReadWrite",
         "managedDisk": {
           "id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/groupe1/providers/Microsoft.Compute/disks/test1_OsDisk_1_0"
-        }
+        },
+         "diskSizeGB": 30
       },
       "dataDisks": []
     },

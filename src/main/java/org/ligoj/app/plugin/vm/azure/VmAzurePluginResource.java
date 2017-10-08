@@ -486,6 +486,10 @@ public class VmAzurePluginResource extends AbstractXmlApiToolPluginResource impl
 			// From marketplace : provider
 			result.setOs(image.getOffer() + " " + image.getSku() + " " + image.getPublisher());
 		}
+
+		// Disk size
+		result.setDisk(properties.getStorageProfile().getOsDisk().getDiskSizeGB());
+
 		return result;
 	}
 
