@@ -40,7 +40,7 @@ define(function () {
 				['service:vm:azure:resource-group', current.$super('icon')('cube', 'service:vm:azure:resource-group') + subscription.parameters['service:vm:azure:resource-group']],
 				['service:vm:azure:subscription', current.$super('icon')('credit-card', 'service:vm:azure:subscription') + subscription.parameters['service:vm:azure:subscription']],
 				['service:vm:azure:tenant', current.$super('icon')('id-badge', 'service:vm:azure:tenant') + subscription.parameters['service:vm:azure:tenant']],
-				['service:vm:azure:location', current.$super('icon')('map-marker', 'service:vm:azure:location') + vm.location]
+				['service:vm:azure:location', current.$super('icon')('map-marker', 'service:vm:azure:location') + '<a href="https://azure.microsoft.com/regions/" target="_blank">' + vm.location + '</a>' ]
 			], 0);
 		}
 	};
