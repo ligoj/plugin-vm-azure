@@ -3,5 +3,5 @@ service:vm:azure:subscription;00000000-0000-0000-0000-000000000000;service:vm:az
 service:vm:azure:tenant;11112222-3333-4444-5555-666677778888;service:vm:azure:test;
 service:vm:azure:key;secret;service:vm:azure:test;
 service:vm:azure:application;99990000-1111-2222-3333-444455556666;service:vm:azure:test;
-service:vm:azure:resource-group;groupe1;service:vm:azure:test;
+service:vm:azure:resource-group;group1;service:vm:azure:test;
 service:vm:azure:name;test1;;1

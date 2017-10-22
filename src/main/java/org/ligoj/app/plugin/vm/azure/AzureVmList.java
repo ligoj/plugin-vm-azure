@@ -1,5 +1,6 @@
 package org.ligoj.app.plugin.vm.azure;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -44,7 +45,28 @@ public class AzureVmList {
 		private String vmId;
 		private Map<String, String> hardwareProfile;
 		private AzureVmStorageProfile storageProfile;
+		private AzureVmNetworkProfile networkProfile;
 		private InstanceView instanceView;
+	}
+
+	/**
+	 * Azure VM network.
+	 */
+	@Getter
+	@Setter
+	@JsonIgnoreProperties(ignoreUnknown = true)
+	public static class AzureVmNetworkProfile {
+		private Collection<AzureVmNicRef> networkInterfaces;
+	}
+
+	/**
+	 * Azure VM network interface
+	 */
+	@Getter
+	@Setter
+	@JsonIgnoreProperties(ignoreUnknown = true)
+	public static class AzureVmNicRef {
+		private String id;
 	}
 
 	/**
@@ -81,8 +103,6 @@ public class AzureVmList {
 		private String osType;
 		private int diskSizeGB;
 	}
-	
-	
 
 	/**
 	 * Azure VM statuses.

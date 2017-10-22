@@ -6,7 +6,7 @@
     },
     "storageProfile": {
       "imageReference": {
-        "id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/groupe1/providers/Microsoft.Compute/images/debian9-docker17"
+        "id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/group1/providers/Microsoft.Compute/images/debian9-docker17"
       },
       "osDisk": {
         "osType": "Linux",
@@ -14,7 +14,7 @@
         "createOption": "FromImage",
         "caching": "ReadWrite",
         "managedDisk": {
-          "id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/groupe1/providers/Microsoft.Compute/disks/test1_OsDisk_1_0"
+          "id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/group1/providers/Microsoft.Compute/disks/test1_OsDisk_1_0"
         },
          "diskSizeGB": 30
       },
@@ -28,11 +28,11 @@
       },
       "secrets": []
     },
-    "networkProfile": {"networkInterfaces":[{"id":"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/groupe1/providers/Microsoft.Network/networkInterfaces/test1637"}]},
+    "networkProfile": {"networkInterfaces":[{"id":"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/group1/providers/Microsoft.Network/networkInterfaces/test1637"}]},
     "diagnosticsProfile": {
       "bootDiagnostics": {
         "enabled": true,
-        "storageUri": "https://groupe1diag863.blob.core.windows.net/"
+        "storageUri": "https://group1diag863.blob.core.windows.net/"
       }
     },
     "provisioningState": "Succeeded",
@@ -51,8 +51,8 @@
         }
       ],
       "bootDiagnostics": {
-        "consoleScreenshotBlobUri": "https://groupe1diag863.blob.core.windows.net/bootdiagnostics-test1-vm-id-0/test1.vm-id-0.screenshot.bmp",
-        "serialConsoleLogBlobUri": "https://groupe1diag863.blob.core.windows.net/bootdiagnostics-test1-vm-id-0/test1.vm-id-0.serialconsole.log"
+        "consoleScreenshotBlobUri": "https://group1diag863.blob.core.windows.net/bootdiagnostics-test1-vm-id-0/test1.vm-id-0.screenshot.bmp",
+        "serialConsoleLogBlobUri": "https://group1diag863.blob.core.windows.net/bootdiagnostics-test1-vm-id-0/test1.vm-id-0.serialconsole.log"
       },
       "statuses": [
         {
@@ -71,6 +71,6 @@
   },
   "type": "Microsoft.Compute/virtualMachines",
   "location": "westeurope",
-  "id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/groupe1/providers/Microsoft.Compute/virtualMachines/test1",
+  "id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/group1/providers/Microsoft.Compute/virtualMachines/test1",
   "name": "test1"
 }

@@ -1,0 +1,26 @@
+{
+  "name": "vm-0PublicIP",
+  "id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/group1/providers/Microsoft.Network/publicIPAddresses/vm-0PublicIP",
+  "etag": "W/\"0\"",
+  "location": "westeurope",
+  "tags": {},
+  "properties": {
+    "provisioningState": "Succeeded",
+    "resourceGuid": "0",
+    "ipAddress": "1.2.3.4",
+    "publicIPAddressVersion": "IPv4",
+    "publicIPAllocationMethod": "Dynamic",
+    "idleTimeoutInMinutes": 4,
+    "dnsSettings": {
+      "domainNameLabel": "vm-0-b67589",
+      "fqdn": "vm-0-b67589.westeurope.cloudapp.azure.com"
+    },
+    "ipConfiguration": {
+      "id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/group1/providers/Microsoft.Network/networkInterfaces/vm-0VMNic/ipConfigurations/ipconfigvm-0"
+    }
+  },
+  "type": "Microsoft.Network/publicIPAddresses",
+  "sku": {
+    "name": "Basic"
+  }
+}

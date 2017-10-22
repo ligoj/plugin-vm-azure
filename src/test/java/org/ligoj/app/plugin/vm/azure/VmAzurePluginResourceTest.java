@@ -61,7 +61,7 @@ import net.sf.ehcache.CacheManager;
 @Rollback
 @Transactional
 public class VmAzurePluginResourceTest extends AbstractServerTest {
-	private static final String COMPUTE_URL = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/groupe1/providers/Microsoft.Compute/virtualMachines";
+	private static final String COMPUTE_URL = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/group1/providers/Microsoft.Compute/virtualMachines";
 
 	@Autowired
 	private VmAzurePluginResource resource;
@@ -128,7 +128,7 @@ public class VmAzurePluginResourceTest extends AbstractServerTest {
 	}
 
 	@Test
-	public void validateVmNotFound() throws Exception {
+	public void getVmDetailsNotFound() throws Exception {
 		thrown.expect(ValidationJsonException.class);
 		thrown.expect(MatcherUtil.validationMatcher(VmAzurePluginResource.PARAMETER_VM, "azure-vm"));
 		prepareMockAuth();
@@ -137,17 +137,17 @@ public class VmAzurePluginResourceTest extends AbstractServerTest {
 		final VmAzurePluginResource resource = newResource();
 		final Map<String, String> parameters = pvResource.getNodeParameters("service:vm:azure:test");
 		parameters.put(VmAzurePluginResource.PARAMETER_VM, "0");
-		resource.validateVm(parameters);
+		resource.getVmDetails(parameters);
 	}
 
 	@Test
-	public void validateVm() throws Exception {
+	public void getVmDetails() throws Exception {
 		prepareMockVm();
 
 		final Map<String, String> parameters = pvResource.getNodeParameters("service:vm:azure:test");
 		parameters.put(VmAzurePluginResource.PARAMETER_VM, "test1");
 		final VmAzurePluginResource resource = newResource();
-		final AzureVm vm = resource.validateVm(parameters);
+		final AzureVm vm = resource.getVmDetails(parameters);
 		checkItem(vm);
 	}
 
@@ -159,6 +159,15 @@ public class VmAzurePluginResourceTest extends AbstractServerTest {
 		Assert.assertEquals(1, item.getCpu());
 		Assert.assertFalse(item.isBusy());
 		Assert.assertEquals(4048, item.getRam());
+
+		// Check network
+		Assert.assertEquals(2, item.getNetworks().size());
+		Assert.assertEquals("10.0.4.20", item.getNetworks().get(0).getIp());
+		Assert.assertEquals("private", item.getNetworks().get(0).getType());
+		Assert.assertNull(item.getNetworks().get(0).getDns());
+		Assert.assertEquals("1.2.3.4", item.getNetworks().get(1).getIp());
+		Assert.assertEquals("public", item.getNetworks().get(1).getType());
+		Assert.assertEquals("vm-0-b67589.westeurope.cloudapp.azure.com", item.getNetworks().get(1).getDns());
 	}
 
 	@Test
@@ -174,9 +183,11 @@ public class VmAzurePluginResourceTest extends AbstractServerTest {
 	@Test
 	public void checkSubscriptionStatusFromImage() throws Exception {
 		prepareMockAuth();
+		prepareMockNetwork();
+
 		// Find a specific VM
-		httpServer.stubFor(get(urlPathEqualTo(COMPUTE_URL + "/test1")).willReturn(aResponse().withStatus(HttpStatus.SC_OK).withBody(
-				IOUtils.toString(new ClassPathResource("mock-server/azure/vm-on-from-image.json").getInputStream(), StandardCharsets.UTF_8))));
+		httpServer.stubFor(get(urlPathEqualTo(COMPUTE_URL + "/test1")).willReturn(aResponse().withStatus(HttpStatus.SC_OK).withBody(IOUtils
+				.toString(new ClassPathResource("mock-server/azure/vm-on-from-image.json").getInputStream(), StandardCharsets.UTF_8))));
 
 		// Expose VM sizes
 		httpServer.stubFor(get(urlPathEqualTo(
@@ -189,19 +200,69 @@ public class VmAzurePluginResourceTest extends AbstractServerTest {
 		final SubscriptionStatusWithData nodeStatusWithData = resource.checkSubscriptionStatus(subscription, null,
 				subscriptionResource.getParametersNoCheck(subscription));
 		Assert.assertTrue(nodeStatusWithData.getStatus().isUp());
-		
+
 		final AzureVm vm = (AzureVm) nodeStatusWithData.getData().get("vm");
-		
+
 		Assert.assertEquals("vm-id-0", vm.getInternalId());
 		Assert.assertEquals("test1", vm.getId());
 		Assert.assertEquals("Linux (debian9-docker17)", vm.getOs());
 	}
 
+	@Test(expected = IllegalArgumentException.class)
+	public void checkSubscriptionStatusInvalidJson() throws Exception {
+		prepareMockAuth();
+		prepareMockNetwork();
 
+		// Find a specific VM
+		httpServer.stubFor(
+				get(urlPathEqualTo(COMPUTE_URL + "/test1")).willReturn(aResponse().withStatus(HttpStatus.SC_OK).withBody("<html>")));
+		httpServer.start();
+
+		final VmAzurePluginResource resource = newResource();
+		resource.checkSubscriptionStatus(subscription, null, subscriptionResource.getParametersNoCheck(subscription));
+	}
+
+	@Test
+	public void checkSubscriptionStatusNoPublicIp() throws Exception {
+		prepareMockAuth();
+
+		// Find a specific VM
+		httpServer.stubFor(get(urlPathEqualTo(COMPUTE_URL + "/test1")).willReturn(aResponse().withStatus(HttpStatus.SC_OK).withBody(
+				IOUtils.toString(new ClassPathResource("mock-server/azure/vm-on.json").getInputStream(), StandardCharsets.UTF_8))));
+
+		// Expose VM sizes
+		httpServer.stubFor(get(urlPathEqualTo(
+				"/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Compute/locations/westeurope/vmSizes"))
+						.willReturn(aResponse().withStatus(HttpStatus.SC_OK).withBody(IOUtils.toString(
+								new ClassPathResource("mock-server/azure/list-sizes.json").getInputStream(), StandardCharsets.UTF_8))));
+
+		// Only private IP
+		httpServer.stubFor(get(urlPathEqualTo(
+				"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/group1/providers/Microsoft.Network/networkInterfaces/test1637"))
+						.willReturn(aResponse().withStatus(HttpStatus.SC_OK).withBody(IOUtils.toString(
+								new ClassPathResource("mock-server/azure/vm-nic.json").getInputStream(), StandardCharsets.UTF_8))));
+
+		httpServer.start();
+
+		final VmAzurePluginResource resource = newResource();
+		final SubscriptionStatusWithData nodeStatusWithData = resource.checkSubscriptionStatus(subscription, null,
+				subscriptionResource.getParametersNoCheck(subscription));
+		Assert.assertTrue(nodeStatusWithData.getStatus().isUp());
+
+		final AzureVm vm = (AzureVm) nodeStatusWithData.getData().get("vm");
+
+		Assert.assertEquals("vm-id-0", vm.getInternalId());
+		Assert.assertEquals("test1", vm.getId());
+		Assert.assertEquals("UbuntuServer 16.04-LTS Canonical", vm.getOs());
+		Assert.assertEquals(1, vm.getNetworks().size());
+		Assert.assertEquals("10.0.4.20", vm.getNetworks().get(0).getIp());
+		Assert.assertNull(vm.getNetworks().get(0).getDns());
+	}
 
 	@Test
 	public void checkSubscriptionStatusNoSize() throws Exception {
 		prepareMockAuth();
+		prepareMockNetwork();
 
 		// Find a specific VM
 		httpServer.stubFor(get(urlPathEqualTo(COMPUTE_URL + "/test1")).willReturn(aResponse().withStatus(HttpStatus.SC_OK).withBody(
@@ -230,6 +291,7 @@ public class VmAzurePluginResourceTest extends AbstractServerTest {
 	@Test
 	public void checkSubscriptionStatusInvalidSize() throws Exception {
 		prepareMockAuth();
+		prepareMockNetwork();
 
 		// Find a specific VM
 		httpServer.stubFor(get(urlPathEqualTo(COMPUTE_URL + "/test1")).willReturn(aResponse().withStatus(HttpStatus.SC_OK).withBody(
@@ -266,12 +328,28 @@ public class VmAzurePluginResourceTest extends AbstractServerTest {
 		httpServer.stubFor(get(urlPathEqualTo(COMPUTE_URL + "/test1")).willReturn(aResponse().withStatus(HttpStatus.SC_OK).withBody(
 				IOUtils.toString(new ClassPathResource("mock-server/azure/vm-on.json").getInputStream(), StandardCharsets.UTF_8))));
 
+		prepareMockNetwork();
+
 		// Expose VM sizes
 		httpServer.stubFor(get(urlPathEqualTo(
 				"/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Compute/locations/westeurope/vmSizes"))
 						.willReturn(aResponse().withStatus(HttpStatus.SC_OK).withBody(IOUtils.toString(
 								new ClassPathResource("mock-server/azure/list-sizes.json").getInputStream(), StandardCharsets.UTF_8))));
 		httpServer.start();
+	}
+
+	private void prepareMockNetwork() throws IOException {
+		// Expose NIC having public IP
+		httpServer.stubFor(get(urlPathEqualTo(
+				"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/group1/providers/Microsoft.Network/networkInterfaces/test1637"))
+						.willReturn(aResponse().withStatus(HttpStatus.SC_OK)
+								.withBody(IOUtils.toString(
+										new ClassPathResource("mock-server/azure/vm-nic-with-public.json").getInputStream(),
+										StandardCharsets.UTF_8))));
+		httpServer.stubFor(get(urlPathEqualTo(
+				"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/group1/providers/Microsoft.Network/publicIPAddresses/vm-0PublicIP"))
+						.willReturn(aResponse().withStatus(HttpStatus.SC_OK).withBody(IOUtils.toString(
+								new ClassPathResource("mock-server/azure/vm-public-ip.json").getInputStream(), StandardCharsets.UTF_8))));
 	}
 
 	private void prepareMockFindAll() throws IOException {

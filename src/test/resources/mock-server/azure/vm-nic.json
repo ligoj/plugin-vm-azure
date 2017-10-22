@@ -1,0 +1,44 @@
+{
+  "name": "vm-0VMNic",
+  "id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/group1/providers/Microsoft.Network/networkInterfaces/vm-0VMNic",
+  "etag": "W/\"0\"",
+  "location": "westeurope",
+  "tags": {},
+  "properties": {
+    "provisioningState": "Succeeded",
+    "resourceGuid": "0",
+    "ipConfigurations": [
+      {
+        "name": "ipx",
+        "id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/group1/providers/Microsoft.Network/networkInterfaces/vm-0VMNic/ipConfigurations/ipx",
+        "etag": "W/\"0\"",
+        "properties": {
+          "provisioningState": "Succeeded",
+          "privateIPAddress": "10.0.4.20",
+          "privateIPAllocationMethod": "Dynamic",
+          "subnet": {
+            "id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/group1/providers/Microsoft.Network/virtualNetworks/group1-vnet/subnets/default"
+          },
+          "primary": true,
+          "privateIPAddressVersion": "IPv4"
+        }
+      }
+    ],
+    "dnsSettings": {
+      "dnsServers": [],
+      "appliedDnsServers": [],
+      "internalDomainNameSuffix": "0.ax.internal.cloudapp.net"
+    },
+    "macAddress": "00-00-00-00-00-00",
+    "enableAcceleratedNetworking": false,
+    "enableIPForwarding": false,
+    "networkSecurityGroup": {
+      "id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/group1/providers/Microsoft.Network/networkSecurityGroups/vm-0-0-nsg"
+    },
+    "primary": true,
+    "virtualMachine": {
+      "id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/group1/providers/Microsoft.Compute/virtualMachines/vm-0"
+    }
+  },
+  "type": "Microsoft.Network/networkInterfaces"
+}

@@ -2,6 +2,8 @@ package org.ligoj.app.plugin.vm.azure;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -31,8 +33,12 @@ import org.ligoj.app.api.SubscriptionStatusWithData;
 import org.ligoj.app.dao.NodeRepository;
 import org.ligoj.app.plugin.vm.VmResource;
 import org.ligoj.app.plugin.vm.VmServicePlugin;
+import org.ligoj.app.plugin.vm.azure.AzureNic.AzureIpConfiguration;
+import org.ligoj.app.plugin.vm.azure.AzureNic.AzureIpConfigurationProperties;
+import org.ligoj.app.plugin.vm.azure.AzurePublicIp.AzureDns;
 import org.ligoj.app.plugin.vm.azure.AzureVmList.AzureVmDetails;
 import org.ligoj.app.plugin.vm.azure.AzureVmList.AzureVmEntry;
+import org.ligoj.app.plugin.vm.azure.AzureVmList.AzureVmNicRef;
 import org.ligoj.app.plugin.vm.azure.AzureVmList.AzureVmOs;
 import org.ligoj.app.plugin.vm.dao.VmScheduleRepository;
 import org.ligoj.app.plugin.vm.model.VmOperation;
@@ -406,7 +412,7 @@ public class VmAzurePluginResource extends AbstractXmlApiToolPluginResource impl
 	@Override
 	public void link(final int subscription) throws Exception {
 		// Validate the virtual machine name
-		validateVm(subscriptionResource.getParameters(subscription));
+		getAzureVm(subscriptionResource.getParameters(subscription));
 	}
 
 	/**
@@ -493,27 +499,93 @@ public class VmAzurePluginResource extends AbstractXmlApiToolPluginResource impl
 		return result;
 	}
 
-	/**
-	 * Validate the VM configuration.
-	 * 
-	 * @param parameters
-	 *            the space parameters.
-	 * @return Virtual Machine description.
-	 */
-	protected AzureVm validateVm(final Map<String, String> parameters) throws IOException {
-		return toVm(getAzureVm(parameters), null);
+	@Override
+	public AzureVm getVmDetails(final Map<String, String> parameters) {
+		final String name = parameters.get(PARAMETER_VM);
+		final AzureCurlProcessor processor = new AzureCurlProcessor();
+		try {
+			// Associate the oAuth token to the processor
+			authenticate(parameters, processor);
+
+			// Get the VM data
+			final String vmJson = getVmResource(name, parameters, processor, VM_URL.replace("{vm}", name));
+
+			// VM as been found, return the details with status
+			final AzureVmEntry azure = readValue(vmJson, AzureVmEntry.class);
+
+			// Get instance details
+			final String azSub = parameters.get(PARAMETER_SUBSCRIPTION);
+			final VmAzurePluginResource that = SpringUtils.getBean(VmAzurePluginResource.class);
+			final BiFunction<String, String, VmSize> sizes = (t, l) -> toVmSize(parameters, azSub, that, t, l);
+			final AzureVm vm = toVmStatus(azure, sizes);
+			vm.setNetworks(new ArrayList<>());
+
+			// Get network data for each network references
+			getNetworkDetails(name, parameters, processor, azure.getProperties().getNetworkProfile().getNetworkInterfaces(),
+					vm.getNetworks());
+			return vm;
+		} finally {
+			processor.close();
+		}
 	}
 
-	@Override
-	public AzureVm getVmDetails(final Map<String, String> parameters) throws IOException {
-		// Get simple VM details
-		final AzureVmEntry azure = getAzureVm(parameters);
+	/**
+	 * Check the VM has been found with not <code>null</code> response.
+	 */
+	private String checkResponse(final String name, final String vmJson) {
+		if (vmJson == null) {
+			// Invalid id
+			throw new ValidationJsonException(PARAMETER_VM, "azure-vm", name);
+		}
+		return vmJson;
+	}
 
-		// Get instance details
-		final String azSub = parameters.get(PARAMETER_SUBSCRIPTION);
-		final VmAzurePluginResource that = SpringUtils.getBean(VmAzurePluginResource.class);
-		final BiFunction<String, String, VmSize> sizes = (t, l) -> toVmSize(parameters, azSub, that, t, l);
-		return toVmStatus(azure, sizes);
+	/**
+	 * Fill the given VM with its network details.
+	 */
+	private void getNetworkDetails(final String name, final Map<String, String> parameters, final AzureCurlProcessor processor,
+			final Collection<AzureVmNicRef> nicRefs, final Collection<VmNetwork> networks) {
+		nicRefs.stream().map(nicRef -> getVmResource(name, parameters, processor, nicRef.getId() + "?api-version=2017-09-01"))
+				// Parse the NIC JSON data and get the details
+				.forEach(nicJson -> getNicDetails(name, parameters, processor, readValue(nicJson, AzureNic.class), networks));
+	}
+
+	private String getVmResource(final String name, final Map<String, String> parameters, final AzureCurlProcessor processor,
+			final String resource) {
+		return checkResponse(name, execute(processor, "GET", buildUrl(parameters, resource), ""));
+	}
+
+	/**
+	 * Fill the given VM with its network details.
+	 */
+	private void getNicDetails(final String name, final Map<String, String> parameters, final AzureCurlProcessor processor,
+			final AzureNic nic, final Collection<VmNetwork> networks) {
+		// Extract the direct private IP and the indirect public IP
+		nic.getProperties().getIpConfigurations().stream().map(AzureIpConfiguration::getProperties)
+
+				// Save the private IP
+				.peek(c -> networks.add(new VmNetwork("private", c.getPrivateIPAddress(), null)))
+
+				// Check there is an attached public IP
+				.map(AzureIpConfigurationProperties::getPublicIPAddress).filter(Objects::nonNull)
+
+				// Get the public IP json
+				.map(id -> getVmResource(name, parameters, processor, id.getId() + "?api-version=2017-09-01"))
+
+				// Parse the public IP JSON data
+				.map(i -> readValue(i, AzurePublicIp.class)).map(AzurePublicIp::getProperties)
+
+				// Get the public IP and the optional DNS
+				.forEach(i -> networks.add(new VmNetwork("public", i.getIpAddress(),
+						Optional.ofNullable(i.getDnsSettings()).map(AzureDns::getFqdn).orElse(null))));
+	}
+
+	private <T> T readValue(final String json, final Class<T> clazz) {
+		try {
+			return objectMapper.readValue(json, clazz);
+		} catch (final IOException e) {
+			throw new IllegalArgumentException(e);
+		}
 	}
 
 	/**
@@ -527,13 +599,7 @@ public class VmAzurePluginResource extends AbstractXmlApiToolPluginResource impl
 
 		// Get all VMs and then filter by its name or id
 		final String name = parameters.get(PARAMETER_VM);
-		final String vmJson = getAzureResource(parameters, VM_URL.replace("{vm}", name));
-
-		// Check the VM has been found
-		if (vmJson == null) {
-			// Invalid id
-			throw new ValidationJsonException(PARAMETER_VM, "azure-vm", name);
-		}
+		final String vmJson = checkResponse(name, getAzureResource(parameters, VM_URL.replace("{vm}", name)));
 
 		// VM as been found, return the details with status
 		return objectMapper.readValue(vmJson, AzureVmEntry.class);
@@ -594,7 +660,9 @@ public class VmAzurePluginResource extends AbstractXmlApiToolPluginResource impl
 	protected String authenticateAndExecute(final Map<String, String> parameters, final String method, final String resource) {
 		final AzureCurlProcessor processor = new AzureCurlProcessor();
 		authenticate(parameters, processor);
-		return execute(processor, method, buildUrl(parameters, resource), "");
+		final String result = execute(processor, method, buildUrl(parameters, resource), "");
+		processor.close();
+		return result;
 	}
 
 	/**
@@ -625,7 +693,6 @@ public class VmAzurePluginResource extends AbstractXmlApiToolPluginResource impl
 
 		// Execute the requests
 		processor.process(request);
-		processor.close();
 		return request.getResponse();
 	}
 
