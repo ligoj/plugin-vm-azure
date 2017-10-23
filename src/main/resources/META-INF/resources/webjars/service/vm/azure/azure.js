@@ -36,22 +36,12 @@ define(function () {
 				['service:vm:azure:name', current.renderKey(subscription)],
 				['service:vm:os', vm.os],
 				['service:vm:resources', current.$super('icon')('sliders') + vm.cpu + ' CPU, <i class="fa fa-microchip"></i> ' + formatManager.formatSize((vm.ram || 0) * 1024 * 1024) + (vm.disk ? ', <i class="fa fa-database"></i> ' + formatManager.formatSize((vm.disk || 0) * 1024 * 1024) : '') ],
-				vm.networks ? ['service:vm:network', current.$super('icon')('globle') + current.renderNetwork(vm.networks) ] : null,
+				vm.networks ? ['service:vm:network', current.$super('renderNetwork')(vm.networks) ] : null,
 				['service:vm:azure:resource-group', current.$super('icon')('cube', 'service:vm:azure:resource-group') + subscription.parameters['service:vm:azure:resource-group']],
 				['service:vm:azure:subscription', current.$super('icon')('credit-card', 'service:vm:azure:subscription') + subscription.parameters['service:vm:azure:subscription']],
 				['service:vm:azure:tenant', current.$super('icon')('id-badge', 'service:vm:azure:tenant') + subscription.parameters['service:vm:azure:tenant']],
 				['service:vm:azure:location', current.$super('icon')('map-marker', 'service:vm:azure:location') + vm.location]
 			], 0);
-		},
-		
-		renderNetwork: function (networks) {
-			var result = [];
-			var networkTypeToIcon = {'public': 'globe', 'private': 'lock'};
-			networks.forEach(function(network) {
-				result.push('<i class="fa fa-' + (networkTypeToIcon[network.type] || 'slash') + '"></i> ' + network.ip + (network.dns ? ' [' + network.dns + ']' : ''));
-			});
-			
-			return result.join(', ');
 		}
 	};
 	return current;
