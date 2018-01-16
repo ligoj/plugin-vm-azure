@@ -1,7 +1,6 @@
 package org.ligoj.app.plugin.vm.azure;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -11,9 +10,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -44,23 +40,17 @@ import org.ligoj.app.plugin.vm.azure.AzureVmList.AzureVmOs;
 import org.ligoj.app.plugin.vm.dao.VmScheduleRepository;
 import org.ligoj.app.plugin.vm.model.VmOperation;
 import org.ligoj.app.plugin.vm.model.VmStatus;
-import org.ligoj.app.resource.plugin.AbstractXmlApiToolPluginResource;
-import org.ligoj.app.resource.plugin.CurlCacheToken;
-import org.ligoj.app.resource.plugin.CurlProcessor;
-import org.ligoj.app.resource.plugin.CurlRequest;
 import org.ligoj.bootstrap.core.SpringUtils;
 import org.ligoj.bootstrap.core.resource.BusinessException;
 import org.ligoj.bootstrap.core.security.SecurityHelper;
 import org.ligoj.bootstrap.core.validation.ValidationJsonException;
-import org.ligoj.bootstrap.resource.system.configuration.ConfigurationResource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.microsoft.aad.adal4j.AuthenticationContext;
-import com.microsoft.aad.adal4j.ClientCredential;
 
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -70,7 +60,7 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @Produces(MediaType.APPLICATION_JSON)
 @Slf4j
-public class VmAzurePluginResource extends AbstractXmlApiToolPluginResource implements VmServicePlugin {
+public class VmAzurePluginResource extends AbstractAzureToolPluginResource implements VmServicePlugin {
 
 	/**
 	 * Plug-in key.
@@ -83,95 +73,26 @@ public class VmAzurePluginResource extends AbstractXmlApiToolPluginResource impl
 	public static final String KEY = URL.replace('/', ':').substring(1);
 
 	/**
-	 * Subscription identifier. Like : "00000000-0000-0000-0000-00000000"
+	 * VM operation POST URL.
 	 */
-	public static final String PARAMETER_SUBSCRIPTION = KEY + ":subscription";
-
-	/**
-	 * Application/client identifier, used as principal id. Like :
-	 * "00000000-0000-0000-0000-00000000"
-	 */
-	public static final String PARAMETER_APPID = KEY + ":application";
-
-	/**
-	 * A valid API key. Would be used to retrieve a session token.
-	 */
-	public static final String PARAMETER_KEY = KEY + ":key";
-
-	/**
-	 * Tenant ID from the directory identifier for sample.
-	 * 
-	 * @see https://portal.azure.com/#blade/Microsoft_AAD_IAM/ActiveDirectoryMenuBlade/Properties
-	 */
-	public static final String PARAMETER_TENANT = KEY + ":tenant";
-
-	/**
-	 * The resource group name (not object identifier) used to filter the
-	 * available VM.
-	 */
-	public static final String PARAMETER_RESOURCE_GROUP = KEY + ":resource-group";
-
-	/**
-	 * The managed VM name, not the VM identifier (vmid). Note that VM
-	 * identifier cannot be used to filter resources... Nevertheless, both ID
-	 * and name can be used to find a VM during the subscription.
-	 */
-	public static final String PARAMETER_VM = KEY + ":name";
-
-	/**
-	 * API version configuration name
-	 */
-	public static final String CONF_API_VERSION = KEY + ":api";
-
-	/**
-	 * Default API version for "Microsoft.Compute" provider.
-	 */
-	public static final String DEFAULT_API_VERSION = "2017-03-30";
-
-	/**
-	 * Authority token provider end-point URL.
-	 */
-	private static final String CONF_AUTHORITY = KEY + ":authority";
-
-	/**
-	 * Default authority URL end-point as API token provider.
-	 */
-	public static final String DEFAULT_AUTHORITY = "https://login.windows.net/";
-
-	/**
-	 * Management URL.
-	 */
-	private static final String CONF_MANAGEMENT_URL = KEY + ":management";
-
-	/**
-	 * Default management URL end-point.
-	 */
-	private static final String DEFAULT_MANAGEMENT_URL = "https://management.azure.com/";
-
-	/**
-	 * REST URL format for "Microsoft.Compute" provider.
-	 */
-	private static final String COMPUTE_URL = "subscriptions/{subscriptionId}/resourceGroups/{resourceGroup}/providers/Microsoft.Compute/virtualMachines";
+	public static final String OPERATION_VM = COMPUTE_URL + "/{vm}/{operation}?api-version={apiVersion}";
 
 	/**
 	 * REST URL format for virtual machine URLs.
 	 */
-	private static final String SIZES_URL = "subscriptions/{subscriptionId}/providers/Microsoft.Compute/locations/{location}/vmSizes?api-version={apiVersion}";
+	public static final String SIZES_URL = "subscriptions/{subscriptionId}/providers/Microsoft.Compute/locations/{location}/vmSizes?api-version={apiVersion}";
 
 	/**
 	 * REST URL format for a VM.
 	 */
-	private static final String VM_URL = COMPUTE_URL + "/{vm}?$expand=instanceView&api-version={apiVersion}";
+	public static final String VM_URL = COMPUTE_URL + "/{vm}?$expand=instanceView&api-version={apiVersion}";
 
 	/**
-	 * REST URL format to list VM within a resource group.
+	 * The managed VM name, not the VM identifier (vmid). Note that VM identifier
+	 * cannot be used to filter resources... Nevertheless, both ID and name can be
+	 * used to find a VM during the subscription.
 	 */
-	private static final String FIND_VM_URL = COMPUTE_URL + "?api-version={apiVersion}";
-
-	/**
-	 * VM operation POST URL.
-	 */
-	private static final String OPERATION_VM = COMPUTE_URL + "/{vm}/{operation}?api-version={apiVersion}";
+	public static final String PARAMETER_VM = KEY + ":name";
 
 	private static final Map<VmOperation, String> OPERATION_TO_AZURE = new EnumMap<>(VmOperation.class);
 
@@ -318,16 +239,10 @@ public class VmAzurePluginResource extends AbstractXmlApiToolPluginResource impl
 	}
 
 	@Autowired
-	private CurlCacheToken curlCacheToken;
-
-	@Autowired
 	private VmScheduleRepository vmScheduleRepository;
 
 	@Autowired
 	private SecurityHelper securityHelper;
-
-	@Autowired
-	private ConfigurationResource configuration;
 
 	@Autowired
 	private NodeRepository nodeRepository;
@@ -335,80 +250,9 @@ public class VmAzurePluginResource extends AbstractXmlApiToolPluginResource impl
 	@Autowired
 	private ObjectMapper objectMapper;
 
-	@Value("${saas.service-vm-azure-auth-retries:2}")
+	@Value("${ligoj.service-vm-azure-auth-retries:2}")
+	@Getter
 	private int retries;
-
-	/**
-	 * Cache the API token.
-	 */
-	protected String authenticate(final String tenant, final String principal, final String key) {
-		// Authentication request
-		return curlCacheToken.getTokenCache(VmAzurePluginResource.class, tenant + "##" + principal + "/" + key,
-				k -> getAccessTokenFromUserCredentials(tenant, principal, key), retries,
-				() -> new ValidationJsonException(PARAMETER_KEY, "azure-login"));
-	}
-
-	/**
-	 * Get the Azure bearer token from the authority.
-	 */
-	private String getAccessTokenFromUserCredentials(final String tenant, final String principal, final String key) {
-		final ExecutorService service = newExecutorService();
-		try {
-			final AuthenticationContext context = newAuthenticationContext(tenant, service);
-			/*
-			 * Replace {client_id} with ApplicationID and {password} with
-			 * password that were used to create Service Principal above.
-			 */
-			final ClientCredential credential = new ClientCredential(principal, key);
-			return context.acquireToken(getManagementUrl(), credential, null).get().getAccessToken();
-		} catch (final ExecutionException | InterruptedException | MalformedURLException e) {
-			// Authentication failed
-			log.info("Azure authentication failed for tenant {} and principal {}", tenant, principal, e);
-		} finally {
-			service.shutdown();
-		}
-		return null;
-	}
-
-	protected ExecutorService newExecutorService() {
-		return Executors.newFixedThreadPool(1);
-	}
-
-	/**
-	 * Create a new {@link AuthenticationContext}
-	 */
-	protected AuthenticationContext newAuthenticationContext(final String tenant, final ExecutorService service)
-			throws MalformedURLException {
-		return new AuthenticationContext(getAuthority() + tenant, true, service);
-	}
-
-	private String getAuthority() {
-		return configuration.get(CONF_AUTHORITY, DEFAULT_AUTHORITY);
-	}
-
-	private String getManagementUrl() {
-		return configuration.get(CONF_MANAGEMENT_URL, DEFAULT_MANAGEMENT_URL);
-	}
-
-	/**
-	 * Return the API version used to query the Azure REST API.
-	 */
-	private String getApiVersion() {
-		return configuration.get(CONF_API_VERSION, DEFAULT_API_VERSION);
-	}
-
-	/**
-	 * Prepare an authenticated connection to Azure. The given processor would
-	 * be updated with the security token.
-	 */
-	protected void authenticate(final Map<String, String> parameters, final AzureCurlProcessor processor) {
-		final String principal = parameters.get(PARAMETER_APPID);
-		final String key = StringUtils.trimToEmpty(parameters.get(PARAMETER_KEY));
-		final String tenant = StringUtils.trimToEmpty(parameters.get(PARAMETER_TENANT));
-
-		// Authentication request using cache
-		processor.setToken(authenticate(tenant, principal, key));
-	}
 
 	@Override
 	public void link(final int subscription) throws Exception {
@@ -417,8 +261,8 @@ public class VmAzurePluginResource extends AbstractXmlApiToolPluginResource impl
 	}
 
 	/**
-	 * Find the virtual machines matching to the given criteria. Look into
-	 * virtual machine name only.
+	 * Find the virtual machines matching to the given criteria. Look into virtual
+	 * machine name only.
 	 *
 	 * @param node
 	 *            the node to be tested with given parameters.
@@ -458,8 +302,8 @@ public class VmAzurePluginResource extends AbstractXmlApiToolPluginResource impl
 	}
 
 	/**
-	 * Build a described {@link AzureVm} completing the VM details with the
-	 * instance details.
+	 * Build a described {@link AzureVm} completing the VM details with the instance
+	 * details.
 	 * 
 	 * @param azureVm
 	 *            The Azure VM object built from the raw JSON stream.
@@ -644,85 +488,14 @@ public class VmAzurePluginResource extends AbstractXmlApiToolPluginResource impl
 		return statuses.stream().map(AzureVmList.VmStatus::getCode).anyMatch(UNDEPLOYED_CODE::equals);
 	}
 
-	/**
-	 * Return a vCloud's resource after an authentication. Return
-	 * <code>null</code> when the resource is not found. Authentication will be
-	 * done to get the data.
-	 */
-	protected String getAzureResource(final Map<String, String> parameters, final String resource) {
-		return authenticateAndExecute(parameters, HttpMethod.GET, resource);
-	}
-
-	/**
-	 * Return an Azure resource after an authentication. Return
-	 * <code>null</code> when the resource is not found. Authentication is
-	 * requested using a token from a cache.
-	 */
-	protected String authenticateAndExecute(final Map<String, String> parameters, final String method, final String resource) {
-		final AzureCurlProcessor processor = new AzureCurlProcessor();
-		authenticate(parameters, processor);
-		final String result = execute(processor, method, buildUrl(parameters, resource), "");
-		processor.close();
-		return result;
-	}
-
-	/**
-	 * Build a fully qualified management URL from the target resource and the
-	 * subscription parameters. Replace resourceGroup, apiVersion, subscription,
-	 * and VM name when available within the resource URL.
-	 * 
-	 * @param resource
-	 *            Resource URL with parameters to replace.
-	 */
-	private String buildUrl(final Map<String, String> parameters, final String resource) {
-		return getManagementUrl() + resource.replace("{apiVersion}", getApiVersion())
-				.replace("{resourceGroup}", parameters.getOrDefault(PARAMETER_RESOURCE_GROUP, "-"))
-				.replace("{subscriptionId}", parameters.getOrDefault(PARAMETER_SUBSCRIPTION, "-"))
-				.replace("{vm}", parameters.getOrDefault(PARAMETER_VM, "-"));
-	}
-
-	/**
-	 * Return/execute a vCloud resource. Return <code>null</code> when the
-	 * resource is not found. Authentication should be proceeded before for
-	 * authenticated query.
-	 */
-	protected String execute(final CurlProcessor processor, final String method, final String url, final String resource) {
-		// Get the resource using the preempted authentication
-		final CurlRequest request = new CurlRequest(method,
-				StringUtils.removeEnd(StringUtils.appendIfMissing(url, "/") + StringUtils.removeStart(resource, "/"), "/"), null);
-		request.setSaveResponse(true);
-
-		// Execute the requests
-		processor.process(request);
-		return request.getResponse();
+	@Override
+	protected String buildUrl(final Map<String, String> parameters, final String resource) {
+		return super.buildUrl(parameters, resource).replace("{vm}", parameters.getOrDefault(PARAMETER_VM, "-"));
 	}
 
 	@Override
 	public String getKey() {
 		return VmAzurePluginResource.KEY;
-	}
-
-	/**
-	 * Check the server is available with enough permission to query VM.
-	 * Requires "VIRTUAL MACHINE CONTRIBUTOR" permission.
-	 */
-	private void validateAdminAccess(final Map<String, String> parameters) {
-		if (getAzureResource(parameters, FIND_VM_URL) == null) {
-			throw new ValidationJsonException(PARAMETER_SUBSCRIPTION, "azure-admin");
-		}
-	}
-
-	@Override
-	public String getVersion(final Map<String, String> parameters) {
-		// Use API version as product version
-		return getApiVersion();
-	}
-
-	@Override
-	public boolean checkStatus(final Map<String, String> parameters) throws Exception {
-		// Status is UP <=> Administration access is UP (if defined)
-		validateAdminAccess(parameters);
-		return true;
 	}
 
 	@Override
@@ -768,16 +541,15 @@ public class VmAzurePluginResource extends AbstractXmlApiToolPluginResource impl
 	}
 
 	/**
-	 * Decide the best operation suiting to the required operation and depending
-	 * on the current status of the virtual machine.
+	 * Decide the best operation suiting to the required operation and depending on
+	 * the current status of the virtual machine.
 	 * 
 	 * @param status
 	 *            The current status of the VM.
 	 * @param operation
 	 *            The requested operation.
 	 * @return The fail-safe operation suiting to the current status of the VM.
-	 *         Return <code>null</code> when the computed operation is
-	 *         irrelevant.
+	 *         Return <code>null</code> when the computed operation is irrelevant.
 	 */
 	protected VmOperation failSafeOperation(final VmStatus status, final VmOperation operation) {
 		return Optional.ofNullable(FAILSAFE_OPERATIONS.get(status)).map(m -> m.get(operation)).orElse(null);
@@ -787,9 +559,8 @@ public class VmAzurePluginResource extends AbstractXmlApiToolPluginResource impl
 	 * Return the available Azure sizes.
 	 * 
 	 * @param azSub
-	 *            The related Azure subscription identifier. Seem to duplicate
-	 *            the one inside the given parameters, but required for the
-	 *            cache key.
+	 *            The related Azure subscription identifier. Seem to duplicate the
+	 *            one inside the given parameters, but required for the cache key.
 	 * @param location
 	 *            The target location, required by Azure web service
 	 * @param parameters
