@@ -14,6 +14,12 @@
 	<packaging>jar</packaging>
 	<name>Ligoj - Plugin VM Azure</name>
 
+	<scm>
+		<connection>scm:git:https://github.com/ligoj/plugin-vm-azure</connection>
+		<developerConnection>scm:git:https://github.com/ligoj/plugin-vm-azure</developerConnection>
+		<url>https://github.com/ligoj/plugin-vm-azure.git</url>
+	</scm>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.ligoj.plugin</groupId>
