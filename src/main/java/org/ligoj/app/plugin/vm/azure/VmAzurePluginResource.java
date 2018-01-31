@@ -88,9 +88,9 @@ public class VmAzurePluginResource extends AbstractAzureToolPluginResource imple
 	public static final String VM_URL = COMPUTE_URL + "/{vm}?$expand=instanceView&api-version={apiVersion}";
 
 	/**
-	 * The managed VM name, not the VM identifier (vmid). Note that VM identifier
-	 * cannot be used to filter resources... Nevertheless, both ID and name can be
-	 * used to find a VM during the subscription.
+	 * The managed VM name, not the VM identifier (vmid). Note that VM
+	 * identifier cannot be used to filter resources... Nevertheless, both ID
+	 * and name can be used to find a VM during the subscription.
 	 */
 	public static final String PARAMETER_VM = KEY + ":name";
 
@@ -261,8 +261,8 @@ public class VmAzurePluginResource extends AbstractAzureToolPluginResource imple
 	}
 
 	/**
-	 * Find the virtual machines matching to the given criteria. Look into virtual
-	 * machine name only.
+	 * Find the virtual machines matching to the given criteria. Look into
+	 * virtual machine name only.
 	 *
 	 * @param node
 	 *            the node to be tested with given parameters.
@@ -302,8 +302,8 @@ public class VmAzurePluginResource extends AbstractAzureToolPluginResource imple
 	}
 
 	/**
-	 * Build a described {@link AzureVm} completing the VM details with the instance
-	 * details.
+	 * Build a described {@link AzureVm} completing the VM details with the
+	 * instance details.
 	 * 
 	 * @param azureVm
 	 *            The Azure VM object built from the raw JSON stream.
@@ -379,7 +379,7 @@ public class VmAzurePluginResource extends AbstractAzureToolPluginResource imple
 	 */
 	private String checkResponse(final String name, final String vmJson) {
 		if (vmJson == null) {
-			// Invalid id
+			// Invalid VM identifier? This VM cannot be found
 			throw new ValidationJsonException(PARAMETER_VM, "azure-vm", name);
 		}
 		return vmJson;
@@ -425,6 +425,10 @@ public class VmAzurePluginResource extends AbstractAzureToolPluginResource imple
 						Optional.ofNullable(i.getDnsSettings()).map(AzureDns::getFqdn).orElse(null))));
 	}
 
+	/**
+	 * Parse the String and return a runtime exception whn is not a correct
+	 * JSON.
+	 */
 	private <T> T readValue(final String json, final Class<T> clazz) {
 		try {
 			return objectMapper.readValue(json, clazz);
@@ -541,15 +545,16 @@ public class VmAzurePluginResource extends AbstractAzureToolPluginResource imple
 	}
 
 	/**
-	 * Decide the best operation suiting to the required operation and depending on
-	 * the current status of the virtual machine.
+	 * Decide the best operation suiting to the required operation and depending
+	 * on the current status of the virtual machine.
 	 * 
 	 * @param status
 	 *            The current status of the VM.
 	 * @param operation
 	 *            The requested operation.
 	 * @return The fail-safe operation suiting to the current status of the VM.
-	 *         Return <code>null</code> when the computed operation is irrelevant.
+	 *         Return <code>null</code> when the computed operation is
+	 *         irrelevant.
 	 */
 	protected VmOperation failSafeOperation(final VmStatus status, final VmOperation operation) {
 		return Optional.ofNullable(FAILSAFE_OPERATIONS.get(status)).map(m -> m.get(operation)).orElse(null);
@@ -559,8 +564,9 @@ public class VmAzurePluginResource extends AbstractAzureToolPluginResource imple
 	 * Return the available Azure sizes.
 	 * 
 	 * @param azSub
-	 *            The related Azure subscription identifier. Seem to duplicate the
-	 *            one inside the given parameters, but required for the cache key.
+	 *            The related Azure subscription identifier. Seem to duplicate
+	 *            the one inside the given parameters, but required for the
+	 *            cache key.
 	 * @param location
 	 *            The target location, required by Azure web service
 	 * @param parameters

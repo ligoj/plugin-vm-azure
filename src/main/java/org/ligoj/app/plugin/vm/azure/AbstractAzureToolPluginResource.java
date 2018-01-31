@@ -9,7 +9,7 @@ import java.util.concurrent.Executors;
 import javax.ws.rs.HttpMethod;
 
 import org.apache.commons.lang3.StringUtils;
-import org.ligoj.app.resource.plugin.AbstractXmlApiToolPluginResource;
+import org.ligoj.app.resource.plugin.AbstractToolPluginResource;
 import org.ligoj.app.resource.plugin.CurlCacheToken;
 import org.ligoj.app.resource.plugin.CurlProcessor;
 import org.ligoj.app.resource.plugin.CurlRequest;
@@ -27,12 +27,12 @@ import lombok.extern.slf4j.Slf4j;
  * plug-ins. But, for now, there is no plug-in dependency management.
  */
 @Slf4j
-public abstract class AbstractAzureToolPluginResource extends AbstractXmlApiToolPluginResource {
+public abstract class AbstractAzureToolPluginResource extends AbstractToolPluginResource {
 
 	/**
 	 * Plug-in Key shortcut
 	 */
-	public static final String PLUGIN_KEY = VmAzurePluginResource.KEY;
+	public static final String PLUGIN_KEY = "service:vm:azure";
 
 	/**
 	 * API version configuration name

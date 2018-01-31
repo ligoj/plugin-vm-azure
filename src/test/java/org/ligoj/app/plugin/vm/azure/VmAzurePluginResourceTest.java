@@ -18,10 +18,10 @@ import javax.transaction.Transactional;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpStatus;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.ligoj.app.AbstractServerTest;
 import org.ligoj.app.MatcherUtil;
 import org.ligoj.app.api.SubscriptionStatusWithData;
@@ -45,7 +45,7 @@ import org.springframework.core.task.TaskExecutor;
 import org.springframework.core.task.support.ExecutorServiceAdapter;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import com.microsoft.aad.adal4j.AuthenticationContext;
 import com.microsoft.aad.adal4j.AuthenticationResult;
@@ -56,7 +56,7 @@ import net.sf.ehcache.CacheManager;
 /**
  * Test class of {@link VmAzurePluginResource}
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@ExtendWith(SpringExtension.class)
 @ContextConfiguration(locations = "classpath:/META-INF/spring/application-context-test.xml")
 @Rollback
 @Transactional
@@ -77,7 +77,7 @@ public class VmAzurePluginResourceTest extends AbstractServerTest {
 
 	protected int subscription;
 
-	@Before
+	@BeforeEach
 	public void prepareData() throws IOException {
 		// Only with Spring context
 		persistSystemEntities();
@@ -112,7 +112,7 @@ public class VmAzurePluginResourceTest extends AbstractServerTest {
 	@Test
 	public void getVersion() throws Exception {
 		final String version = resource.getVersion(subscription);
-		Assert.assertEquals("2017-03-30", version);
+		Assertions.assertEquals("2017-03-30", version);
 	}
 
 	@Test
@@ -129,15 +129,15 @@ public class VmAzurePluginResourceTest extends AbstractServerTest {
 
 	@Test
 	public void getVmDetailsNotFound() throws Exception {
-		thrown.expect(ValidationJsonException.class);
-		thrown.expect(MatcherUtil.validationMatcher(VmAzurePluginResource.PARAMETER_VM, "azure-vm"));
 		prepareMockAuth();
 		httpServer.start();
 
 		final VmAzurePluginResource resource = newResource();
 		final Map<String, String> parameters = pvResource.getNodeParameters("service:vm:azure:test");
 		parameters.put(VmAzurePluginResource.PARAMETER_VM, "0");
-		resource.getVmDetails(parameters);
+		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
+			resource.getVmDetails(parameters);
+		}), VmAzurePluginResource.PARAMETER_VM, "azure-vm");
 	}
 
 	@Test
@@ -153,21 +153,21 @@ public class VmAzurePluginResourceTest extends AbstractServerTest {
 
 	private void checkVm(final AzureVm item) {
 		checkItem(item);
-		Assert.assertEquals("westeurope", item.getLocation());
-		Assert.assertEquals(VmStatus.POWERED_ON, item.getStatus());
-		Assert.assertEquals(30, item.getDisk());
-		Assert.assertEquals(1, item.getCpu());
-		Assert.assertFalse(item.isBusy());
-		Assert.assertEquals(4048, item.getRam());
+		Assertions.assertEquals("westeurope", item.getLocation());
+		Assertions.assertEquals(VmStatus.POWERED_ON, item.getStatus());
+		Assertions.assertEquals(30, item.getDisk());
+		Assertions.assertEquals(1, item.getCpu());
+		Assertions.assertFalse(item.isBusy());
+		Assertions.assertEquals(4048, item.getRam());
 
 		// Check network
-		Assert.assertEquals(2, item.getNetworks().size());
-		Assert.assertEquals("10.0.4.20", item.getNetworks().get(0).getIp());
-		Assert.assertEquals("private", item.getNetworks().get(0).getType());
-		Assert.assertNull(item.getNetworks().get(0).getDns());
-		Assert.assertEquals("1.2.3.4", item.getNetworks().get(1).getIp());
-		Assert.assertEquals("public", item.getNetworks().get(1).getType());
-		Assert.assertEquals("vm-0-b67589.westeurope.cloudapp.azure.com", item.getNetworks().get(1).getDns());
+		Assertions.assertEquals(2, item.getNetworks().size());
+		Assertions.assertEquals("10.0.4.20", item.getNetworks().get(0).getIp());
+		Assertions.assertEquals("private", item.getNetworks().get(0).getType());
+		Assertions.assertNull(item.getNetworks().get(0).getDns());
+		Assertions.assertEquals("1.2.3.4", item.getNetworks().get(1).getIp());
+		Assertions.assertEquals("public", item.getNetworks().get(1).getType());
+		Assertions.assertEquals("vm-0-b67589.westeurope.cloudapp.azure.com", item.getNetworks().get(1).getDns());
 	}
 
 	@Test
@@ -176,7 +176,7 @@ public class VmAzurePluginResourceTest extends AbstractServerTest {
 		final VmAzurePluginResource resource = newResource();
 		final SubscriptionStatusWithData nodeStatusWithData = resource.checkSubscriptionStatus(subscription, null,
 				subscriptionResource.getParametersNoCheck(subscription));
-		Assert.assertTrue(nodeStatusWithData.getStatus().isUp());
+		Assertions.assertTrue(nodeStatusWithData.getStatus().isUp());
 		checkVm((AzureVm) nodeStatusWithData.getData().get("vm"));
 	}
 
@@ -199,16 +199,16 @@ public class VmAzurePluginResourceTest extends AbstractServerTest {
 		final VmAzurePluginResource resource = newResource();
 		final SubscriptionStatusWithData nodeStatusWithData = resource.checkSubscriptionStatus(subscription, null,
 				subscriptionResource.getParametersNoCheck(subscription));
-		Assert.assertTrue(nodeStatusWithData.getStatus().isUp());
+		Assertions.assertTrue(nodeStatusWithData.getStatus().isUp());
 
 		final AzureVm vm = (AzureVm) nodeStatusWithData.getData().get("vm");
 
-		Assert.assertEquals("vm-id-0", vm.getInternalId());
-		Assert.assertEquals("test1", vm.getId());
-		Assert.assertEquals("Linux (debian9-docker17)", vm.getOs());
+		Assertions.assertEquals("vm-id-0", vm.getInternalId());
+		Assertions.assertEquals("test1", vm.getId());
+		Assertions.assertEquals("Linux (debian9-docker17)", vm.getOs());
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void checkSubscriptionStatusInvalidJson() throws Exception {
 		prepareMockAuth();
 		prepareMockNetwork();
@@ -219,7 +219,9 @@ public class VmAzurePluginResourceTest extends AbstractServerTest {
 		httpServer.start();
 
 		final VmAzurePluginResource resource = newResource();
-		resource.checkSubscriptionStatus(subscription, null, subscriptionResource.getParametersNoCheck(subscription));
+		Assertions.assertThrows(IllegalArgumentException.class, () -> {
+			resource.checkSubscriptionStatus(subscription, null, subscriptionResource.getParametersNoCheck(subscription));
+		});
 	}
 
 	@Test
@@ -247,16 +249,16 @@ public class VmAzurePluginResourceTest extends AbstractServerTest {
 		final VmAzurePluginResource resource = newResource();
 		final SubscriptionStatusWithData nodeStatusWithData = resource.checkSubscriptionStatus(subscription, null,
 				subscriptionResource.getParametersNoCheck(subscription));
-		Assert.assertTrue(nodeStatusWithData.getStatus().isUp());
+		Assertions.assertTrue(nodeStatusWithData.getStatus().isUp());
 
 		final AzureVm vm = (AzureVm) nodeStatusWithData.getData().get("vm");
 
-		Assert.assertEquals("vm-id-0", vm.getInternalId());
-		Assert.assertEquals("test1", vm.getId());
-		Assert.assertEquals("UbuntuServer 16.04-LTS Canonical", vm.getOs());
-		Assert.assertEquals(1, vm.getNetworks().size());
-		Assert.assertEquals("10.0.4.20", vm.getNetworks().get(0).getIp());
-		Assert.assertNull(vm.getNetworks().get(0).getDns());
+		Assertions.assertEquals("vm-id-0", vm.getInternalId());
+		Assertions.assertEquals("test1", vm.getId());
+		Assertions.assertEquals("UbuntuServer 16.04-LTS Canonical", vm.getOs());
+		Assertions.assertEquals(1, vm.getNetworks().size());
+		Assertions.assertEquals("10.0.4.20", vm.getNetworks().get(0).getIp());
+		Assertions.assertNull(vm.getNetworks().get(0).getDns());
 	}
 
 	@Test
@@ -279,13 +281,13 @@ public class VmAzurePluginResourceTest extends AbstractServerTest {
 		final VmAzurePluginResource resource = newResource();
 		final SubscriptionStatusWithData nodeStatusWithData = resource.checkSubscriptionStatus(subscription, null,
 				subscriptionResource.getParametersNoCheck(subscription));
-		Assert.assertTrue(nodeStatusWithData.getStatus().isUp());
+		Assertions.assertTrue(nodeStatusWithData.getStatus().isUp());
 		final AzureVm item = (AzureVm) nodeStatusWithData.getData().get("vm");
 		checkItem(item);
-		Assert.assertEquals(VmStatus.POWERED_OFF, item.getStatus());
-		Assert.assertEquals(0, item.getCpu());
-		Assert.assertTrue(item.isBusy());
-		Assert.assertEquals(0, item.getRam());
+		Assertions.assertEquals(VmStatus.POWERED_OFF, item.getStatus());
+		Assertions.assertEquals(0, item.getCpu());
+		Assertions.assertTrue(item.isBusy());
+		Assertions.assertEquals(0, item.getRam());
 	}
 
 	@Test
@@ -306,13 +308,13 @@ public class VmAzurePluginResourceTest extends AbstractServerTest {
 		final VmAzurePluginResource resource = newResource();
 		final SubscriptionStatusWithData nodeStatusWithData = resource.checkSubscriptionStatus(subscription, null,
 				subscriptionResource.getParametersNoCheck(subscription));
-		Assert.assertTrue(nodeStatusWithData.getStatus().isUp());
+		Assertions.assertTrue(nodeStatusWithData.getStatus().isUp());
 		final AzureVm item = (AzureVm) nodeStatusWithData.getData().get("vm");
 		checkItem(item);
-		Assert.assertEquals(VmStatus.POWERED_OFF, item.getStatus());
-		Assert.assertEquals(0, item.getCpu());
-		Assert.assertTrue(item.isBusy());
-		Assert.assertEquals(0, item.getRam());
+		Assertions.assertEquals(VmStatus.POWERED_OFF, item.getStatus());
+		Assertions.assertEquals(0, item.getCpu());
+		Assertions.assertTrue(item.isBusy());
+		Assertions.assertEquals(0, item.getRam());
 	}
 
 	private void prepareMockAuth() throws IOException {
@@ -364,7 +366,7 @@ public class VmAzurePluginResourceTest extends AbstractServerTest {
 	@Test
 	public void checkStatus() throws Exception {
 		prepareMockFindAll();
-		Assert.assertTrue(newResource().checkStatus(subscriptionResource.getParametersNoCheck(subscription)));
+		Assertions.assertTrue(newResource().checkStatus(subscriptionResource.getParametersNoCheck(subscription)));
 	}
 
 	private VmAzurePluginResource newResource() throws InterruptedException, ExecutionException, MalformedURLException {
@@ -415,23 +417,25 @@ public class VmAzurePluginResourceTest extends AbstractServerTest {
 	 */
 	@Test
 	public void checkStatusAuthorityFailed() throws Exception {
-		thrown.expect(ValidationJsonException.class);
-		thrown.expect(MatcherUtil.validationMatcher(VmAzurePluginResource.PARAMETER_KEY, "azure-login"));
-		resource.checkStatus(subscriptionResource.getParametersNoCheck(subscription));
+		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
+			resource.checkStatus(subscriptionResource.getParametersNoCheck(subscription));
+		}), AbstractAzureToolPluginResource.PARAMETER_KEY, "azure-login");
 	}
 
 	/**
 	 * Authority error, client side
 	 */
-	@Test(expected = IllegalStateException.class)
+	@Test
 	public void checkStatusAuthorityError() throws Exception {
-		newResourceFailed().checkStatus(subscriptionResource.getParametersNoCheck(subscription));
+		Assertions.assertThrows(IllegalStateException.class, () -> {
+			newResourceFailed().checkStatus(subscriptionResource.getParametersNoCheck(subscription));
+		});
 	}
 
 	/**
 	 * Authority is valid, but the token cannot be acquired
 	 */
-	@Test(expected = IllegalStateException.class)
+	@Test
 	public void checkStatusShudownFailed() throws Exception {
 		prepareMockAuth();
 		httpServer.start();
@@ -443,17 +447,19 @@ public class VmAzurePluginResourceTest extends AbstractServerTest {
 				throw new IllegalStateException();
 			}
 		});
-		resource.checkStatus(subscriptionResource.getParametersNoCheck(subscription));
+		Assertions.assertEquals("yyyy", Assertions.assertThrows(IllegalStateException.class, () -> {
+			resource.checkStatus(subscriptionResource.getParametersNoCheck(subscription));
+		}).getMessage());
 	}
 
 	@Test
 	public void checkStatusNotAccess() throws Exception {
-		thrown.expect(ValidationJsonException.class);
-		thrown.expect(MatcherUtil.validationMatcher(VmAzurePluginResource.PARAMETER_SUBSCRIPTION, "azure-admin"));
 		final VmAzurePluginResource resource = newResource();
 		prepareMockAuth();
 		httpServer.start();
-		resource.checkStatus(subscriptionResource.getParametersNoCheck(subscription));
+		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
+			resource.checkStatus(subscriptionResource.getParametersNoCheck(subscription));
+		}), AbstractAzureToolPluginResource.PARAMETER_SUBSCRIPTION, "azure-admin");
 	}
 
 	@Test
@@ -462,7 +468,7 @@ public class VmAzurePluginResourceTest extends AbstractServerTest {
 		prepareMockFindAll();
 		final VmAzurePluginResource resource = newResource();
 		final List<AzureVm> projects = resource.findAllByName("service:vm:azure:test", "est"); // "=test1"
-		Assert.assertEquals(2, projects.size());
+		Assertions.assertEquals(2, projects.size());
 		checkItem(projects.get(0));
 	}
 
@@ -472,7 +478,7 @@ public class VmAzurePluginResourceTest extends AbstractServerTest {
 		prepareMockFindAll();
 		final VmAzurePluginResource resource = newResource();
 		final List<AzureVm> projects = resource.findAllByName("service:vm:azure:test", "any");
-		Assert.assertEquals(0, projects.size());
+		Assertions.assertEquals(0, projects.size());
 	}
 
 	@Test
@@ -481,7 +487,7 @@ public class VmAzurePluginResourceTest extends AbstractServerTest {
 		prepareMockFindAll();
 		final VmAzurePluginResource resource = newResource();
 		final List<AzureVm> projects = resource.findAllByName("service:vm:azure:test", "est"); // "=test1"
-		Assert.assertEquals(0, projects.size());
+		Assertions.assertEquals(0, projects.size());
 	}
 
 	@Test
@@ -508,14 +514,16 @@ public class VmAzurePluginResourceTest extends AbstractServerTest {
 	/**
 	 * Power Off execution on VM failed.
 	 */
-	@Test(expected = BusinessException.class)
+	@Test
 	public void executeFailed() throws Exception {
 		// VM is found
 		prepareMockVm();
 
 		// But execution, failed : not mocked execution URL
 		final VmAzurePluginResource resource = newResource();
-		resource.execute(subscription, VmOperation.OFF);
+		Assertions.assertEquals("vm-operation-execute", Assertions.assertThrows(BusinessException.class, () -> {
+			resource.execute(subscription, VmOperation.OFF);
+		}).getMessage());
 	}
 
 	/**
@@ -533,31 +541,35 @@ public class VmAzurePluginResourceTest extends AbstractServerTest {
 	 */
 	@Test
 	public void vmSize() {
-		Assert.assertEquals("name", new VmSize("name").getName());
+		Assertions.assertEquals("name", new VmSize("name").getName());
 		VmSize size = new VmSize();
-		Assert.assertNull(size.getName());
+		Assertions.assertNull(size.getName());
 		size.setName("name");
-		Assert.assertEquals("name", size.getName());
+		Assertions.assertEquals("name", size.getName());
 	}
 
-	@Test(expected = NullPointerException.class)
+	@Test
 	public void vmSizeInvalidName() {
-		new VmSize(null);
+		Assertions.assertThrows(NullPointerException.class, () -> {
+			new VmSize(null);
+		});
 	}
 
-	@Test(expected = NullPointerException.class)
+	@Test
 	public void vmSizeInvalidName2() {
-		new VmSize().setName(null);
+		Assertions.assertThrows(NullPointerException.class, () -> {
+			new VmSize().setName(null);
+		});
 	}
 
 	/**
 	 * Check basic VM, not status, not instance details
 	 */
 	private void checkItem(final AzureVm item) {
-		Assert.assertEquals("vm-id-0", item.getInternalId());
-		Assert.assertEquals("test1", item.getId());
-		Assert.assertEquals("test1", item.getName());
-		Assert.assertEquals("UbuntuServer 16.04-LTS Canonical", item.getOs());
+		Assertions.assertEquals("vm-id-0", item.getInternalId());
+		Assertions.assertEquals("test1", item.getId());
+		Assertions.assertEquals("test1", item.getName());
+		Assertions.assertEquals("UbuntuServer 16.04-LTS Canonical", item.getOs());
 	}
 
 }
