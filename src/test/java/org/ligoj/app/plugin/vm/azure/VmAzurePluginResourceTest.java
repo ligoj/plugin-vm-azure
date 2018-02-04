@@ -391,6 +391,7 @@ public class VmAzurePluginResourceTest extends AbstractServerTest {
 		applicationContext.getAutowireCapableBeanFactory().autowireBean(resource);
 		resource = Mockito.spy(resource);
 		final AuthenticationContext context = Mockito.mock(AuthenticationContext.class);
+		@SuppressWarnings("unchecked")
 		final Future<AuthenticationResult> future = Mockito.mock(Future.class);
 		final AuthenticationResult result = new AuthenticationResult("-token-", "-token-", "-token-", 10000, "-token-", null, true);
 		Mockito.doReturn(result).when(future).get();
@@ -551,7 +552,7 @@ public class VmAzurePluginResourceTest extends AbstractServerTest {
 	@Test
 	public void vmSizeInvalidName() {
 		Assertions.assertThrows(NullPointerException.class, () -> {
-			new VmSize(null);
+			new VmSize(null).getClass();
 		});
 	}
 

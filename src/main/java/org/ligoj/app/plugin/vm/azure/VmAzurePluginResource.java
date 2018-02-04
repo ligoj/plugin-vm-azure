@@ -88,9 +88,8 @@ public class VmAzurePluginResource extends AbstractAzureToolPluginResource imple
 	public static final String VM_URL = COMPUTE_URL + "/{vm}?$expand=instanceView&api-version={apiVersion}";
 
 	/**
-	 * The managed VM name, not the VM identifier (vmid). Note that VM
-	 * identifier cannot be used to filter resources... Nevertheless, both ID
-	 * and name can be used to find a VM during the subscription.
+	 * The managed VM name, not the VM identifier (vmid). Note that VM identifier cannot be used to filter resources...
+	 * Nevertheless, both ID and name can be used to find a VM during the subscription.
 	 */
 	public static final String PARAMETER_VM = KEY + ":name";
 
@@ -111,8 +110,7 @@ public class VmAzurePluginResource extends AbstractAzureToolPluginResource imple
 	}
 
 	/**
-	 * Mapping table giving the operation to execute depending on the requested
-	 * operation and the status of the VM.
+	 * Mapping table giving the operation to execute depending on the requested operation and the status of the VM.
 	 * <TABLE summary="Mapping Table">
 	 * <THEAD>
 	 * <TR>
@@ -184,7 +182,8 @@ public class VmAzurePluginResource extends AbstractAzureToolPluginResource imple
 	 * </TBODY>
 	 * </TABLE>
 	 */
-	private static final Map<VmStatus, Map<VmOperation, VmOperation>> FAILSAFE_OPERATIONS = new EnumMap<>(VmStatus.class);
+	private static final Map<VmStatus, Map<VmOperation, VmOperation>> FAILSAFE_OPERATIONS = new EnumMap<>(
+			VmStatus.class);
 
 	/**
 	 * Register a mapping Status+operation to operation.
@@ -196,7 +195,8 @@ public class VmAzurePluginResource extends AbstractAzureToolPluginResource imple
 	 * @param operationFailSafe
 	 *            The computed operation.
 	 */
-	private static void registerOperation(final VmStatus status, final VmOperation operation, final VmOperation operationFailSafe) {
+	private static void registerOperation(final VmStatus status, final VmOperation operation,
+			final VmOperation operationFailSafe) {
 		FAILSAFE_OPERATIONS.computeIfAbsent(status, s -> new EnumMap<>(VmOperation.class));
 		FAILSAFE_OPERATIONS.get(status).put(operation, operationFailSafe);
 	}
@@ -261,8 +261,7 @@ public class VmAzurePluginResource extends AbstractAzureToolPluginResource imple
 	}
 
 	/**
-	 * Find the virtual machines matching to the given criteria. Look into
-	 * virtual machine name only.
+	 * Find the virtual machines matching to the given criteria. Look into virtual machine name only.
 	 *
 	 * @param node
 	 *            the node to be tested with given parameters.
@@ -273,8 +272,8 @@ public class VmAzurePluginResource extends AbstractAzureToolPluginResource imple
 	@GET
 	@Path("{node:[a-z].*}/{criteria}")
 	@Consumes(MediaType.APPLICATION_JSON)
-	public List<AzureVm> findAllByName(@PathParam("node") final String node, @PathParam("criteria") final String criteria)
-			throws IOException {
+	public List<AzureVm> findAllByName(@PathParam("node") final String node,
+			@PathParam("criteria") final String criteria) throws IOException {
 		// Check the node exists
 		if (nodeRepository.findOneVisible(node, securityHelper.getLogin()) == null) {
 			return Collections.emptyList();
@@ -284,26 +283,26 @@ public class VmAzurePluginResource extends AbstractAzureToolPluginResource imple
 		final Map<String, String> parameters = pvResource.getNodeParameters(node);
 		final String vmJson = StringUtils.defaultString(getAzureResource(parameters, FIND_VM_URL), "{\"value\":[]}");
 		final AzureVmList azure = objectMapper.readValue(vmJson, AzureVmList.class);
-		return azure.getValue().stream().filter(vm -> StringUtils.containsIgnoreCase(vm.getName(), criteria)).map(v -> toVm(v, null))
-				.sorted().collect(Collectors.toList());
+		return azure.getValue().stream().filter(vm -> StringUtils.containsIgnoreCase(vm.getName(), criteria))
+				.map(v -> toVm(v, null)).sorted().collect(Collectors.toList());
 	}
 
 	/**
 	 * Return the fail-safe {@link VmSize} corresponding to the requested type.
 	 */
-	private VmSize toVmSize(final Map<String, String> parameters, final String azSub, final VmAzurePluginResource that, final String type,
-			final String location) {
+	private VmSize toVmSize(final Map<String, String> parameters, final String azSub, final VmAzurePluginResource that,
+			final String type, final String location) {
 		try {
 			return that.getInstanceSizes(azSub, location, parameters).getOrDefault(type, new VmSize(type));
 		} catch (final IOException ioe) {
 			// Unmanaged size for this subscription
+			log.info("Unmanaged VM size {} : {}", type, ioe.getMessage());
 			return new VmSize(type);
 		}
 	}
 
 	/**
-	 * Build a described {@link AzureVm} completing the VM details with the
-	 * instance details.
+	 * Build a described {@link AzureVm} completing the VM details with the instance details.
 	 * 
 	 * @param azureVm
 	 *            The Azure VM object built from the raw JSON stream.
@@ -331,8 +330,8 @@ public class VmAzurePluginResource extends AbstractAzureToolPluginResource imple
 		final AzureVmOs image = properties.getStorageProfile().getImageReference();
 		if (image.getOffer() == null) {
 			// From image
-			result.setOs(properties.getStorageProfile().getOsDisk().getOsType() + " (" + StringUtils.substringAfterLast(image.getId(), "/")
-					+ ")");
+			result.setOs(properties.getStorageProfile().getOsDisk().getOsType() + " ("
+					+ StringUtils.substringAfterLast(image.getId(), "/") + ")");
 		} else {
 			// From marketplace : provider
 			result.setOs(image.getOffer() + " " + image.getSku() + " " + image.getPublisher());
@@ -366,8 +365,8 @@ public class VmAzurePluginResource extends AbstractAzureToolPluginResource imple
 			vm.setNetworks(new ArrayList<>());
 
 			// Get network data for each network references
-			getNetworkDetails(name, parameters, processor, azure.getProperties().getNetworkProfile().getNetworkInterfaces(),
-					vm.getNetworks());
+			getNetworkDetails(name, parameters, processor,
+					azure.getProperties().getNetworkProfile().getNetworkInterfaces(), vm.getNetworks());
 			return vm;
 		} finally {
 			processor.close();
@@ -388,23 +387,26 @@ public class VmAzurePluginResource extends AbstractAzureToolPluginResource imple
 	/**
 	 * Fill the given VM with its network details.
 	 */
-	private void getNetworkDetails(final String name, final Map<String, String> parameters, final AzureCurlProcessor processor,
-			final Collection<AzureVmNicRef> nicRefs, final Collection<VmNetwork> networks) {
-		nicRefs.stream().map(nicRef -> getVmResource(name, parameters, processor, nicRef.getId() + "?api-version=2017-09-01"))
+	private void getNetworkDetails(final String name, final Map<String, String> parameters,
+			final AzureCurlProcessor processor, final Collection<AzureVmNicRef> nicRefs,
+			final Collection<VmNetwork> networks) {
+		nicRefs.stream()
+				.map(nicRef -> getVmResource(name, parameters, processor, nicRef.getId() + "?api-version=2017-09-01"))
 				// Parse the NIC JSON data and get the details
-				.forEach(nicJson -> getNicDetails(name, parameters, processor, readValue(nicJson, AzureNic.class), networks));
+				.forEach(nicJson -> getNicDetails(name, parameters, processor, readValue(nicJson, AzureNic.class),
+						networks));
 	}
 
-	private String getVmResource(final String name, final Map<String, String> parameters, final AzureCurlProcessor processor,
-			final String resource) {
+	private String getVmResource(final String name, final Map<String, String> parameters,
+			final AzureCurlProcessor processor, final String resource) {
 		return checkResponse(name, execute(processor, "GET", buildUrl(parameters, resource), ""));
 	}
 
 	/**
 	 * Fill the given VM with its network details.
 	 */
-	private void getNicDetails(final String name, final Map<String, String> parameters, final AzureCurlProcessor processor,
-			final AzureNic nic, final Collection<VmNetwork> networks) {
+	private void getNicDetails(final String name, final Map<String, String> parameters,
+			final AzureCurlProcessor processor, final AzureNic nic, final Collection<VmNetwork> networks) {
 		// Extract the direct private IP and the indirect public IP
 		nic.getProperties().getIpConfigurations().stream().map(AzureIpConfiguration::getProperties)
 
@@ -426,8 +428,7 @@ public class VmAzurePluginResource extends AbstractAzureToolPluginResource imple
 	}
 
 	/**
-	 * Parse the String and return a runtime exception whn is not a correct
-	 * JSON.
+	 * Parse the String and return a runtime exception whn is not a correct JSON.
 	 */
 	private <T> T readValue(final String json, final Class<T> clazz) {
 		try {
@@ -473,8 +474,8 @@ public class VmAzurePluginResource extends AbstractAzureToolPluginResource imple
 	 * Return the generic VM status from the Azure statuses
 	 */
 	private VmStatus getStatus(final List<AzureVmList.VmStatus> statuses) {
-		return statuses.stream().map(AzureVmList.VmStatus::getCode).map(CODE_TO_STATUS::get).filter(Objects::nonNull).findFirst()
-				.orElse(null);
+		return statuses.stream().map(AzureVmList.VmStatus::getCode).map(CODE_TO_STATUS::get).filter(Objects::nonNull)
+				.findFirst().orElse(null);
 	}
 
 	/**
@@ -523,8 +524,8 @@ public class VmAzurePluginResource extends AbstractAzureToolPluginResource imple
 		final VmOperation operationF = failSafeOperation(status, operation);
 		if (operationF == null) {
 			// Final operation is considered as useless
-			log.info("Requested operation {} is marked as useless considering the status {} of vm {}", operation, status,
-					parameters.get(PARAMETER_VM));
+			log.info("Requested operation {} is marked as useless considering the status {} of vm {}", operation,
+					status, parameters.get(PARAMETER_VM));
 			return;
 		}
 
@@ -534,8 +535,7 @@ public class VmAzurePluginResource extends AbstractAzureToolPluginResource imple
 	}
 
 	/**
-	 * Check the response is valid. For now, the response must not be
-	 * <code>null</code>.
+	 * Check the response is valid. For now, the response must not be <code>null</code>.
 	 */
 	private void checkSchedulerResponse(final String response) {
 		if (response == null) {
@@ -545,16 +545,15 @@ public class VmAzurePluginResource extends AbstractAzureToolPluginResource imple
 	}
 
 	/**
-	 * Decide the best operation suiting to the required operation and depending
-	 * on the current status of the virtual machine.
+	 * Decide the best operation suiting to the required operation and depending on the current status of the virtual
+	 * machine.
 	 * 
 	 * @param status
 	 *            The current status of the VM.
 	 * @param operation
 	 *            The requested operation.
-	 * @return The fail-safe operation suiting to the current status of the VM.
-	 *         Return <code>null</code> when the computed operation is
-	 *         irrelevant.
+	 * @return The fail-safe operation suiting to the current status of the VM. Return <code>null</code> when the
+	 *         computed operation is irrelevant.
 	 */
 	protected VmOperation failSafeOperation(final VmStatus status, final VmOperation operation) {
 		return Optional.ofNullable(FAILSAFE_OPERATIONS.get(status)).map(m -> m.get(operation)).orElse(null);
@@ -564,9 +563,8 @@ public class VmAzurePluginResource extends AbstractAzureToolPluginResource imple
 	 * Return the available Azure sizes.
 	 * 
 	 * @param azSub
-	 *            The related Azure subscription identifier. Seem to duplicate
-	 *            the one inside the given parameters, but required for the
-	 *            cache key.
+	 *            The related Azure subscription identifier. Seem to duplicate the one inside the given parameters, but
+	 *            required for the cache key.
 	 * @param location
 	 *            The target location, required by Azure web service
 	 * @param parameters
@@ -575,8 +573,9 @@ public class VmAzurePluginResource extends AbstractAzureToolPluginResource imple
 	@CacheResult(cacheName = "azure-sizes")
 	public Map<String, VmSize> getInstanceSizes(@CacheKey final String azSub, @CacheKey final String location,
 			final Map<String, String> parameters) throws IOException {
-		final String jsonSizes = getAzureResource(parameters, SIZES_URL.replace("{subscriptionId}", azSub).replace("{location}", location));
-		return objectMapper.readValue(StringUtils.defaultString(jsonSizes, "{\"value\":[]}"), VmSizes.class).getValue().stream()
-				.collect(Collectors.toMap(VmSize::getName, Function.identity()));
+		final String jsonSizes = getAzureResource(parameters,
+				SIZES_URL.replace("{subscriptionId}", azSub).replace("{location}", location));
+		return objectMapper.readValue(StringUtils.defaultString(jsonSizes, "{\"value\":[]}"), VmSizes.class).getValue()
+				.stream().collect(Collectors.toMap(VmSize::getName, Function.identity()));
 	}
 }
