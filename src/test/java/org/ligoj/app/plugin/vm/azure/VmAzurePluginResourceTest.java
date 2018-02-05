@@ -417,7 +417,7 @@ public class VmAzurePluginResourceTest extends AbstractServerTest {
 	 * Authority does not respond : no defined mock
 	 */
 	@Test
-	public void checkStatusAuthorityFailed() throws Exception {
+	public void checkStatusAuthorityFailed() {
 		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
 			resource.checkStatus(subscriptionResource.getParametersNoCheck(subscription));
 		}), AbstractAzureToolPluginResource.PARAMETER_KEY, "azure-login");
@@ -427,7 +427,7 @@ public class VmAzurePluginResourceTest extends AbstractServerTest {
 	 * Authority error, client side
 	 */
 	@Test
-	public void checkStatusAuthorityError() throws Exception {
+	public void checkStatusAuthorityError() {
 		Assertions.assertThrows(IllegalStateException.class, () -> {
 			newResourceFailed().checkStatus(subscriptionResource.getParametersNoCheck(subscription));
 		});

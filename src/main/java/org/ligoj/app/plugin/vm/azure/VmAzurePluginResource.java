@@ -505,7 +505,7 @@ public class VmAzurePluginResource extends AbstractAzureToolPluginResource imple
 
 	@Override
 	public SubscriptionStatusWithData checkSubscriptionStatus(final int subscription, final String node,
-			final Map<String, String> parameters) throws Exception { // NOSONAR
+			final Map<String, String> parameters) {
 		final SubscriptionStatusWithData status = new SubscriptionStatusWithData();
 		status.put("vm", getVmDetails(parameters));
 		status.put("schedules", vmScheduleRepository.countBySubscription(subscription));
@@ -513,7 +513,7 @@ public class VmAzurePluginResource extends AbstractAzureToolPluginResource imple
 	}
 
 	@Override
-	public void execute(final int subscription, final VmOperation operation) throws Exception {
+	public void execute(final int subscription, final VmOperation operation) {
 		final Map<String, String> parameters = subscriptionResource.getParametersNoCheck(subscription);
 
 		// First get VM state

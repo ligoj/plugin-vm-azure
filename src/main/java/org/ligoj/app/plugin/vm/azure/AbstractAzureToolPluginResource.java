@@ -328,7 +328,7 @@ public abstract class AbstractAzureToolPluginResource extends AbstractToolPlugin
 	}
 
 	@Override
-	public boolean checkStatus(final Map<String, String> parameters) throws Exception {
+	public boolean checkStatus(final Map<String, String> parameters) {
 		// Status is UP <=> Administration access is UP (if defined)
 		validateAdminAccess(parameters);
 		return true;
