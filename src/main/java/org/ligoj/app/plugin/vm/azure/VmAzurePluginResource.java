@@ -45,12 +45,10 @@ import org.ligoj.bootstrap.core.resource.BusinessException;
 import org.ligoj.bootstrap.core.security.SecurityHelper;
 import org.ligoj.bootstrap.core.validation.ValidationJsonException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -249,10 +247,6 @@ public class VmAzurePluginResource extends AbstractAzureToolPluginResource imple
 
 	@Autowired
 	private ObjectMapper objectMapper;
-
-	@Value("${ligoj.service-vm-azure-auth-retries:2}")
-	@Getter
-	private int retries;
 
 	@Override
 	public void link(final int subscription) throws Exception {
