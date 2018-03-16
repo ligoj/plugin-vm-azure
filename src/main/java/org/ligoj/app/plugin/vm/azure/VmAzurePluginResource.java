@@ -40,7 +40,6 @@ import org.ligoj.app.plugin.vm.azure.AzureVmList.AzureVmOs;
 import org.ligoj.app.plugin.vm.dao.VmScheduleRepository;
 import org.ligoj.app.plugin.vm.model.VmOperation;
 import org.ligoj.app.plugin.vm.model.VmStatus;
-import org.ligoj.bootstrap.core.SpringUtils;
 import org.ligoj.bootstrap.core.resource.BusinessException;
 import org.ligoj.bootstrap.core.security.SecurityHelper;
 import org.ligoj.bootstrap.core.validation.ValidationJsonException;
@@ -247,6 +246,12 @@ public class VmAzurePluginResource extends AbstractAzureToolPluginResource imple
 
 	@Autowired
 	private ObjectMapper objectMapper;
+	
+	/**
+	 * Used for "this" and forcing proxying.
+	 */
+	@Autowired
+	protected VmAzurePluginResource self;
 
 	@Override
 	public void link(final int subscription) throws Exception {
@@ -284,10 +289,10 @@ public class VmAzurePluginResource extends AbstractAzureToolPluginResource imple
 	/**
 	 * Return the fail-safe {@link VmSize} corresponding to the requested type.
 	 */
-	private VmSize toVmSize(final Map<String, String> parameters, final String azSub, final VmAzurePluginResource that,
-			final String type, final String location) {
+	private VmSize toVmSize(final Map<String, String> parameters, final String azSub, final String type,
+			final String location) {
 		try {
-			return that.getInstanceSizes(azSub, location, parameters).getOrDefault(type, new VmSize(type));
+			return self.getInstanceSizes(azSub, location, parameters).getOrDefault(type, new VmSize(type));
 		} catch (final IOException ioe) {
 			// Unmanaged size for this subscription
 			log.info("Unmanaged VM size {} : {}", type, ioe.getMessage());
@@ -353,8 +358,7 @@ public class VmAzurePluginResource extends AbstractAzureToolPluginResource imple
 
 			// Get instance details
 			final String azSub = parameters.get(PARAMETER_SUBSCRIPTION);
-			final VmAzurePluginResource that = SpringUtils.getBean(VmAzurePluginResource.class);
-			final BiFunction<String, String, VmSize> sizes = (t, l) -> toVmSize(parameters, azSub, that, t, l);
+			final BiFunction<String, String, VmSize> sizes = (t, l) -> toVmSize(parameters, azSub, t, l);
 			final AzureVm vm = toVmStatus(azure, sizes);
 			vm.setNetworks(new ArrayList<>());
 
