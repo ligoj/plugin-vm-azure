@@ -1,4 +1,4 @@
 id;name;refined.id;mode;uiClasses;tag;tagUiClasses
-service:vm;Virtualization;;LINK;fa fa-cloud;technical;fa fa-industry
+service:vm;Virtualization;;LINK;fas fa-cloud;technical;fa fa-industry
 service:vm:azure;Azure;service:vm;LINK;;;
 service:vm:azure:test;Azure - Test;service:vm:azure;LINK;;;
