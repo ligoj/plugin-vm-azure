@@ -1,3 +1,6 @@
+/*
+ * Licensed under MIT (https://github.com/ligoj/ligoj/blob/master/LICENSE)
+ */
 define({
 	"service:vm:azure:portal" : "Portail de cette VM",
 	"service:vm:azure:application" : "Identifiant d'application",
