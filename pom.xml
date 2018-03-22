@@ -10,7 +10,7 @@
 
 	<groupId>org.ligoj.plugin</groupId>
 	<artifactId>plugin-vm-azure</artifactId>
-	<version>1.0.12-SNAPSHOT</version>
+	<version>1.0.12</version>
 	<packaging>jar</packaging>
 	<name>Ligoj - Plugin VM Azure</name>
 
@@ -24,7 +24,7 @@
 		<dependency>
 			<groupId>org.ligoj.plugin</groupId>
 			<artifactId>plugin-vm</artifactId>
-			<version>[1.4.0-SNAPSHOT,1.6.0)</version>
+			<version>[1.5.2,1.6.0)</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
