@@ -18,6 +18,10 @@ import lombok.Setter;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class AzureVm extends Vm {
 
+	/**
+	 * SID
+	 */
+	private static final long serialVersionUID = 1L;
 	private String location;
 	private String internalId;
 
