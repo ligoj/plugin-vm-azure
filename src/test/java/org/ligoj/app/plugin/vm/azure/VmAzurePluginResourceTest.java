@@ -90,8 +90,8 @@ public class VmAzurePluginResourceTest extends AbstractServerTest {
 		// Coverage only
 		resource.getKey();
 
-		configuration.saveOrUpdate("service:vm:azure:management", "http://localhost:" + MOCK_PORT + "/");
-		configuration.saveOrUpdate("service:vm:azure:authority", "https://localhost:" + MOCK_PORT + "/");
+		configuration.put("service:vm:azure:management", "http://localhost:" + MOCK_PORT + "/");
+		configuration.put("service:vm:azure:authority", "https://localhost:" + MOCK_PORT + "/");
 
 		// Invalidate azure cache
 		cacheManager.getCache("curl-tokens").clear();
