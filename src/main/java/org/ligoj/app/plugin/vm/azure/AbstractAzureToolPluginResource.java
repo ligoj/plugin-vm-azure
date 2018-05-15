@@ -126,12 +126,10 @@ public abstract class AbstractAzureToolPluginResource extends AbstractToolPlugin
 	 * 
 	 * @param tenant
 	 *            The tenant UID.
-	 * @param principal
+	 * @param tenant
 	 *            The application UID.
 	 * @param key
 	 *            The token API key.
-	 * @param The
-	 *            authenticate token.
 	 */
 	protected String authenticate(final String tenant, final String principal, final String key) {
 		// Authentication request
@@ -180,9 +178,9 @@ public abstract class AbstractAzureToolPluginResource extends AbstractToolPlugin
 	/**
 	 * Create a new {@link AuthenticationContext}
 	 * 
-	 * @param The
+	 * @param tenant The
 	 *            tenant identifier.
-	 * @param executor
+	 * @param service executor
 	 *            service.
 	 * @return the new authenticated context.
 	 * @throws MalformedURLException

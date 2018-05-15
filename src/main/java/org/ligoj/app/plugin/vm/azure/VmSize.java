@@ -3,6 +3,8 @@
  */
 package org.ligoj.app.plugin.vm.azure;
 
+import java.io.Serializable;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import lombok.Getter;
@@ -16,10 +18,16 @@ import lombok.Setter;
  */
 @Getter
 @Setter
-@JsonIgnoreProperties(ignoreUnknown=true)
+@JsonIgnoreProperties(ignoreUnknown = true)
 @RequiredArgsConstructor
 @NoArgsConstructor
-public class VmSize {
+public class VmSize implements Serializable {
+
+	/**
+	 * SID
+	 */
+	private static final long serialVersionUID = 1L;
+
 	@NonNull
 	private String name;
 	private int numberOfCores;
