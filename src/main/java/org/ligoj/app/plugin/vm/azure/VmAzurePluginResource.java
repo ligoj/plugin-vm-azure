@@ -32,7 +32,6 @@ import org.ligoj.app.api.SubscriptionStatusWithData;
 import org.ligoj.app.dao.NodeRepository;
 import org.ligoj.app.plugin.vm.VmNetwork;
 import org.ligoj.app.plugin.vm.VmResource;
-import org.ligoj.app.plugin.vm.VmServicePlugin;
 import org.ligoj.app.plugin.vm.azure.AzureNic.AzureIpConfiguration;
 import org.ligoj.app.plugin.vm.azure.AzureNic.AzureIpConfigurationProperties;
 import org.ligoj.app.plugin.vm.azure.AzurePublicIp.AzureDns;
@@ -41,6 +40,7 @@ import org.ligoj.app.plugin.vm.azure.AzureVmList.AzureVmEntry;
 import org.ligoj.app.plugin.vm.azure.AzureVmList.AzureVmNicRef;
 import org.ligoj.app.plugin.vm.azure.AzureVmList.AzureVmOs;
 import org.ligoj.app.plugin.vm.dao.VmScheduleRepository;
+import org.ligoj.app.plugin.vm.execution.VmExecutionServicePlugin;
 import org.ligoj.app.plugin.vm.model.VmOperation;
 import org.ligoj.app.plugin.vm.model.VmStatus;
 import org.ligoj.bootstrap.core.resource.BusinessException;
@@ -60,7 +60,7 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @Produces(MediaType.APPLICATION_JSON)
 @Slf4j
-public class VmAzurePluginResource extends AbstractAzureToolPluginResource implements VmServicePlugin {
+public class VmAzurePluginResource extends AbstractAzureToolPluginResource implements VmExecutionServicePlugin {
 
 	/**
 	 * Plug-in key.

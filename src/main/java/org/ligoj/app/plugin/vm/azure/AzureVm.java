@@ -3,7 +3,7 @@
  */
 package org.ligoj.app.plugin.vm.azure;
 
-import org.ligoj.app.plugin.vm.Vm;
+import org.ligoj.app.plugin.vm.execution.Vm;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
