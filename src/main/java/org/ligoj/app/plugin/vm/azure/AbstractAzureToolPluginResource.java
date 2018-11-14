@@ -13,9 +13,9 @@ import javax.ws.rs.HttpMethod;
 
 import org.apache.commons.lang3.StringUtils;
 import org.ligoj.app.resource.plugin.AbstractToolPluginResource;
-import org.ligoj.app.resource.plugin.CurlCacheToken;
-import org.ligoj.app.resource.plugin.CurlProcessor;
-import org.ligoj.app.resource.plugin.CurlRequest;
+import org.ligoj.bootstrap.core.curl.CurlCacheToken;
+import org.ligoj.bootstrap.core.curl.CurlProcessor;
+import org.ligoj.bootstrap.core.curl.CurlRequest;
 import org.ligoj.bootstrap.core.validation.ValidationJsonException;
 import org.ligoj.bootstrap.resource.system.configuration.ConfigurationResource;
 import org.springframework.beans.factory.annotation.Autowired;
