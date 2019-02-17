@@ -55,6 +55,7 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * Azure VM resource.
+ * @see <a href="https://azure.microsoft.com/api/v2/pricing/mysql/calculator/?culture=en-us&discount=mosp">MySQL</a>
  */
 @Path(VmAzurePluginResource.URL)
 @Service
@@ -187,7 +188,7 @@ public class VmAzurePluginResource extends AbstractAzureToolPluginResource imple
 
 	/**
 	 * Register a mapping Status+operation to operation.
-	 * 
+	 *
 	 * @param status
 	 *            The current status.
 	 * @param operation
@@ -212,7 +213,7 @@ public class VmAzurePluginResource extends AbstractAzureToolPluginResource imple
 
 	/**
 	 * VM code to {@link VmStatus} mapping.
-	 * 
+	 *
 	 * @see https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/virtualmachines-state
 	 */
 	private static final Map<String, VmStatus> CODE_TO_STATUS = new HashMap<>();
@@ -249,7 +250,7 @@ public class VmAzurePluginResource extends AbstractAzureToolPluginResource imple
 
 	@Autowired
 	private ObjectMapper objectMapper;
-	
+
 	/**
 	 * Used for "this" and forcing proxying.
 	 */
@@ -305,7 +306,7 @@ public class VmAzurePluginResource extends AbstractAzureToolPluginResource imple
 
 	/**
 	 * Build a described {@link AzureVm} completing the VM details with the instance details.
-	 * 
+	 *
 	 * @param azureVm
 	 *            The Azure VM object built from the raw JSON stream.
 	 * @param sizeProvider
@@ -441,7 +442,7 @@ public class VmAzurePluginResource extends AbstractAzureToolPluginResource imple
 
 	/**
 	 * Validate and return the {@link AzureVmEntry} without instance details.
-	 * 
+	 *
 	 * @param parameters
 	 *            the space parameters.
 	 * @return Azure Virtual Machine description.
@@ -548,7 +549,7 @@ public class VmAzurePluginResource extends AbstractAzureToolPluginResource imple
 	/**
 	 * Decide the best operation suiting to the required operation and depending on the current status of the virtual
 	 * machine.
-	 * 
+	 *
 	 * @param status
 	 *            The current status of the VM.
 	 * @param operation
@@ -562,7 +563,7 @@ public class VmAzurePluginResource extends AbstractAzureToolPluginResource imple
 
 	/**
 	 * Return the available Azure sizes.
-	 * 
+	 *
 	 * @param azSub
 	 *            The related Azure subscription identifier. Seem to duplicate the one inside the given parameters, but
 	 *            required for the cache key.
