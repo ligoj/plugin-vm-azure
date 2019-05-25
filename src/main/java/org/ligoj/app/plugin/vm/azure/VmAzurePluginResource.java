@@ -55,6 +55,7 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * Azure VM resource.
+ * 
  * @see <a href="https://azure.microsoft.com/api/v2/pricing/mysql/calculator/?culture=en-us&discount=mosp">MySQL</a>
  */
 @Path(VmAzurePluginResource.URL)
@@ -189,12 +190,9 @@ public class VmAzurePluginResource extends AbstractAzureToolPluginResource imple
 	/**
 	 * Register a mapping Status+operation to operation.
 	 *
-	 * @param status
-	 *            The current status.
-	 * @param operation
-	 *            The requested operation
-	 * @param operationFailSafe
-	 *            The computed operation.
+	 * @param status            The current status.
+	 * @param operation         The requested operation
+	 * @param operationFailSafe The computed operation.
 	 */
 	private static void registerOperation(final VmStatus status, final VmOperation operation,
 			final VmOperation operationFailSafe) {
@@ -214,7 +212,7 @@ public class VmAzurePluginResource extends AbstractAzureToolPluginResource imple
 	/**
 	 * VM code to {@link VmStatus} mapping.
 	 *
-	 * @see https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/virtualmachines-state
+	 * @see <a href="https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/virtualmachines-state">State</a>
 	 */
 	private static final Map<String, VmStatus> CODE_TO_STATUS = new HashMap<>();
 	static {
@@ -266,11 +264,10 @@ public class VmAzurePluginResource extends AbstractAzureToolPluginResource imple
 	/**
 	 * Find the virtual machines matching to the given criteria. Look into virtual machine name only.
 	 *
-	 * @param node
-	 *            the node to be tested with given parameters.
-	 * @param criteria
-	 *            the search criteria. Case is insensitive.
+	 * @param node     the node to be tested with given parameters.
+	 * @param criteria the search criteria. Case is insensitive.
 	 * @return virtual machines.
+	 * @throws IOException When Azure JSON read failed.
 	 */
 	@GET
 	@Path("{node:service:.+}/{criteria}")
@@ -307,10 +304,8 @@ public class VmAzurePluginResource extends AbstractAzureToolPluginResource imple
 	/**
 	 * Build a described {@link AzureVm} completing the VM details with the instance details.
 	 *
-	 * @param azureVm
-	 *            The Azure VM object built from the raw JSON stream.
-	 * @param sizeProvider
-	 *            Optional Azure instance size provider.
+	 * @param azureVm      The Azure VM object built from the raw JSON stream.
+	 * @param sizeProvider Optional Azure instance size provider.
 	 * @return The merge VM details.
 	 */
 	private AzureVm toVm(final AzureVmEntry azureVm, final BiFunction<String, String, VmSize> sizeProvider) {
@@ -443,9 +438,9 @@ public class VmAzurePluginResource extends AbstractAzureToolPluginResource imple
 	/**
 	 * Validate and return the {@link AzureVmEntry} without instance details.
 	 *
-	 * @param parameters
-	 *            the space parameters.
+	 * @param parameters the space parameters.
 	 * @return Azure Virtual Machine description.
+	 * @throws IOException When Azure JSON read failed.
 	 */
 	protected AzureVmEntry getAzureVm(final Map<String, String> parameters) throws IOException {
 
@@ -550,10 +545,8 @@ public class VmAzurePluginResource extends AbstractAzureToolPluginResource imple
 	 * Decide the best operation suiting to the required operation and depending on the current status of the virtual
 	 * machine.
 	 *
-	 * @param status
-	 *            The current status of the VM.
-	 * @param operation
-	 *            The requested operation.
+	 * @param status    The current status of the VM.
+	 * @param operation The requested operation.
 	 * @return The fail-safe operation suiting to the current status of the VM. Return <code>null</code> when the
 	 *         computed operation is irrelevant.
 	 */
@@ -564,13 +557,12 @@ public class VmAzurePluginResource extends AbstractAzureToolPluginResource imple
 	/**
 	 * Return the available Azure sizes.
 	 *
-	 * @param azSub
-	 *            The related Azure subscription identifier. Seem to duplicate the one inside the given parameters, but
-	 *            required for the cache key.
-	 * @param location
-	 *            The target location, required by Azure web service
-	 * @param parameters
-	 *            The credentials parameters
+	 * @param azSub      The related Azure subscription identifier. Seem to duplicate the one inside the given
+	 *                   parameters, but required for the cache key.
+	 * @param location   The target location, required by Azure web service
+	 * @param parameters The credentials parameters.
+	 * @return Instance sizes mapping from the name.
+	 * @throws IOException When Azure JSON read failed.
 	 */
 	@CacheResult(cacheName = "azure-sizes")
 	public Map<String, VmSize> getInstanceSizes(@CacheKey final String azSub, @CacheKey final String location,

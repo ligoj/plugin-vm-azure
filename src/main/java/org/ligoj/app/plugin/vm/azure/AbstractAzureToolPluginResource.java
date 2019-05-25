@@ -124,12 +124,10 @@ public abstract class AbstractAzureToolPluginResource extends AbstractToolPlugin
 	/**
 	 * Authenticate using the cache API token.
 	 * 
-	 * @param tenant
-	 *            The tenant UID.
-	 * @param tenant
-	 *            The application UID.
-	 * @param key
-	 *            The token API key.
+	 * @param tenant    The tenant UID.
+	 * @param principal The application UID.
+	 * @param key       The token API key.
+	 * @return The authentication token.
 	 */
 	protected String authenticate(final String tenant, final String principal, final String key) {
 		// Authentication request
@@ -178,13 +176,10 @@ public abstract class AbstractAzureToolPluginResource extends AbstractToolPlugin
 	/**
 	 * Create a new {@link AuthenticationContext}
 	 * 
-	 * @param tenant The
-	 *            tenant identifier.
-	 * @param service executor
-	 *            service.
+	 * @param tenant  The tenant identifier.
+	 * @param service executor service.
 	 * @return the new authenticated context.
-	 * @throws MalformedURLException
-	 *             When authority URL cannot be read.
+	 * @throws MalformedURLException When authority URL cannot be read.
 	 */
 	protected AuthenticationContext newAuthenticationContext(final String tenant, final ExecutorService service)
 			throws MalformedURLException {
@@ -230,10 +225,8 @@ public abstract class AbstractAzureToolPluginResource extends AbstractToolPlugin
 	/**
 	 * Prepare an authenticated connection to Azure. The given processor would be updated with the security token.
 	 * 
-	 * @param parameters
-	 *            The subscription parameters.
-	 * @param processor
-	 *            The processor used to authenticate and execute the request.
+	 * @param parameters The subscription parameters.
+	 * @param processor  The processor used to authenticate and execute the request.
 	 */
 	protected void authenticate(final Map<String, String> parameters, final AzureCurlProcessor processor) {
 		final String principal = parameters.get(PARAMETER_APPID);
@@ -247,12 +240,10 @@ public abstract class AbstractAzureToolPluginResource extends AbstractToolPlugin
 	/**
 	 * Return a Azure's resource after an authentication. Authentication will be done to get the data.
 	 * 
-	 * @param parameters
-	 *            The subscription parameters.
-	 * @param resource
-	 *            The internal resource. Appended to the base management URL. This URL may contain parameters to
-	 *            replace. Supported parameters are : <code>{apiVersion}</code>,
-	 *            <code>{resourceGroup}</code>,<code>{subscriptionId}</code>.
+	 * @param parameters The subscription parameters.
+	 * @param resource   The internal resource. Appended to the base management URL. This URL may contain parameters to
+	 *                   replace. Supported parameters are : <code>{apiVersion}</code>,
+	 *                   <code>{resourceGroup}</code>,<code>{subscriptionId}</code>.
 	 * @return The requested azure resource or <code>null</code> when the resource is not found.
 	 */
 	protected String getAzureResource(final Map<String, String> parameters, final String resource) {
@@ -263,14 +254,11 @@ public abstract class AbstractAzureToolPluginResource extends AbstractToolPlugin
 	 * Return an Azure resource after an authentication. Return <code>null</code> when the resource is not found.
 	 * Authentication is requested using a token from a cache.
 	 * 
-	 * @param parameters
-	 *            The subscription parameters.
-	 * @param method
-	 *            The HHTTP method.
-	 * @param resource
-	 *            The internal resource. Appended to the base management URL. This URL may contain parameters to
-	 *            replace. Supported parameters are : <code>{apiVersion}</code>,
-	 *            <code>{resourceGroup}</code>,<code>{subscriptionId}</code>.
+	 * @param parameters The subscription parameters.
+	 * @param method     The HHTTP method.
+	 * @param resource   The internal resource. Appended to the base management URL. This URL may contain parameters to
+	 *                   replace. Supported parameters are : <code>{apiVersion}</code>,
+	 *                   <code>{resourceGroup}</code>,<code>{subscriptionId}</code>.
 	 * @return The requested azure resource or <code>null</code> when the resource is not found.
 	 */
 	protected String authenticateAndExecute(final Map<String, String> parameters, final String method,
@@ -286,10 +274,8 @@ public abstract class AbstractAzureToolPluginResource extends AbstractToolPlugin
 	 * Build a fully qualified management URL from the target resource and the subscription parameters. Replace
 	 * resourceGroup, apiVersion, subscription, and VM name when available within the resource URL.
 	 * 
-	 * @param parameters
-	 *            The subscription parameters.
-	 * @param resource
-	 *            Resource URL with parameters to replace.
+	 * @param parameters The subscription parameters.
+	 * @param resource   Resource URL with parameters to replace.
 	 * @return The target URL with interpolated variables.
 	 */
 	protected String buildUrl(final Map<String, String> parameters, final String resource) {
@@ -302,14 +288,10 @@ public abstract class AbstractAzureToolPluginResource extends AbstractToolPlugin
 	 * Return an Azure resource. Return <code>null</code> when the resource is not found. Authentication should be
 	 * proceeded before for authenticated query.
 	 * 
-	 * @param processor
-	 *            The processor used to query the resource.
-	 * @param method
-	 *            The HHTTP method.
-	 * @param url
-	 *            The base URL.
-	 * @param resource
-	 *            The internal resource URL appended to the base URL parameter. DUplicate '/' are handled.
+	 * @param processor The processor used to query the resource.
+	 * @param method    The HHTTP method.
+	 * @param url       The base URL.
+	 * @param resource  The internal resource URL appended to the base URL parameter. DUplicate '/' are handled.
 	 * @return The requested azure resource or <code>null</code> when the resource is not found.
 	 */
 	protected String execute(final CurlProcessor processor, final String method, final String url,
@@ -328,8 +310,7 @@ public abstract class AbstractAzureToolPluginResource extends AbstractToolPlugin
 	 * Check the server is available with enough permission to query VM. Requires "VIRTUAL MACHINE CONTRIBUTOR"
 	 * permission.
 	 * 
-	 * @param parameters
-	 *            The subscription parameters.
+	 * @param parameters The subscription parameters.
 	 */
 	protected void validateAdminAccess(final Map<String, String> parameters) {
 		if (getAzureResource(parameters, FIND_VM_URL) == null) {

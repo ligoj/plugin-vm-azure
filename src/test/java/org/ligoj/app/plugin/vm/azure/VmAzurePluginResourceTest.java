@@ -61,7 +61,7 @@ import com.microsoft.aad.adal4j.ClientCredential;
 @ContextConfiguration(locations = "classpath:/META-INF/spring/application-context-test.xml")
 @Rollback
 @Transactional
-public class VmAzurePluginResourceTest extends AbstractServerTest {
+class VmAzurePluginResourceTest extends AbstractServerTest {
 	private static final String COMPUTE_URL = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/group1/providers/Microsoft.Compute/virtualMachines";
 
 	@Autowired
@@ -79,7 +79,7 @@ public class VmAzurePluginResourceTest extends AbstractServerTest {
 	protected int subscription;
 
 	@BeforeEach
-	public void prepareData() throws IOException {
+	void prepareData() throws IOException {
 		// Only with Spring context
 		persistSystemEntities();
 		persistEntities("csv",
@@ -101,23 +101,23 @@ public class VmAzurePluginResourceTest extends AbstractServerTest {
 	/**
 	 * Return the subscription identifier of the given project. Assumes there is only one subscription for a service.
 	 */
-	protected int getSubscription(final String project) {
+	private int getSubscription(final String project) {
 		return getSubscription(project, VmAzurePluginResource.KEY);
 	}
 
 	@Test
-	public void delete() throws Exception {
+	void delete() throws Exception {
 		resource.delete(subscription, false);
 	}
 
 	@Test
-	public void getVersion() throws Exception {
+	void getVersion() throws Exception {
 		final String version = resource.getVersion(subscription);
 		Assertions.assertEquals("2017-03-30", version);
 	}
 
 	@Test
-	public void link() throws Exception {
+	void link() throws Exception {
 		prepareMockVm();
 
 		// Invoke create for an already created entity, since for now, there is
@@ -129,7 +129,7 @@ public class VmAzurePluginResourceTest extends AbstractServerTest {
 	}
 
 	@Test
-	public void getVmDetailsNotFound() throws Exception {
+	void getVmDetailsNotFound() throws Exception {
 		prepareMockAuth();
 		httpServer.start();
 
@@ -142,7 +142,7 @@ public class VmAzurePluginResourceTest extends AbstractServerTest {
 	}
 
 	@Test
-	public void getVmDetails() throws Exception {
+	void getVmDetails() throws Exception {
 		prepareMockVm();
 
 		final Map<String, String> parameters = pvResource.getNodeParameters("service:vm:azure:test");
@@ -172,7 +172,7 @@ public class VmAzurePluginResourceTest extends AbstractServerTest {
 	}
 
 	@Test
-	public void checkSubscriptionStatus() throws Exception {
+	void checkSubscriptionStatus() throws Exception {
 		prepareMockVm();
 		final VmAzurePluginResource resource = newResource();
 		final SubscriptionStatusWithData nodeStatusWithData = resource.checkSubscriptionStatus(subscription, null,
@@ -182,7 +182,7 @@ public class VmAzurePluginResourceTest extends AbstractServerTest {
 	}
 
 	@Test
-	public void checkSubscriptionStatusFromImage() throws Exception {
+	void checkSubscriptionStatusFromImage() throws Exception {
 		prepareMockAuth();
 		prepareMockNetwork();
 
@@ -215,7 +215,7 @@ public class VmAzurePluginResourceTest extends AbstractServerTest {
 	}
 
 	@Test
-	public void checkSubscriptionStatusInvalidJson() throws Exception {
+	void checkSubscriptionStatusInvalidJson() throws Exception {
 		prepareMockAuth();
 		prepareMockNetwork();
 
@@ -232,7 +232,7 @@ public class VmAzurePluginResourceTest extends AbstractServerTest {
 	}
 
 	@Test
-	public void checkSubscriptionStatusNoPublicIp() throws Exception {
+	void checkSubscriptionStatusNoPublicIp() throws Exception {
 		prepareMockAuth();
 
 		// Find a specific VM
@@ -277,7 +277,7 @@ public class VmAzurePluginResourceTest extends AbstractServerTest {
 	}
 
 	@Test
-	public void checkSubscriptionStatusNoSize() throws Exception {
+	void checkSubscriptionStatusNoSize() throws Exception {
 		prepareMockAuth();
 		prepareMockNetwork();
 
@@ -309,7 +309,7 @@ public class VmAzurePluginResourceTest extends AbstractServerTest {
 	}
 
 	@Test
-	public void checkSubscriptionStatusInvalidSize() throws Exception {
+	void checkSubscriptionStatusInvalidSize() throws Exception {
 		prepareMockAuth();
 		prepareMockNetwork();
 
@@ -370,7 +370,7 @@ public class VmAzurePluginResourceTest extends AbstractServerTest {
 	}
 
 	private void prepareMockNetwork() throws IOException {
-		// Expose NIC having public IP
+		// Expose NIC having IP
 		httpServer.stubFor(get(urlPathEqualTo(
 				"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/group1/providers/Microsoft.Network/networkInterfaces/test1637"))
 						.willReturn(aResponse().withStatus(HttpStatus.SC_OK).withBody(IOUtils.toString(
@@ -395,7 +395,7 @@ public class VmAzurePluginResourceTest extends AbstractServerTest {
 	}
 
 	@Test
-	public void checkStatus() throws Exception {
+	void checkStatus() throws Exception {
 		prepareMockFindAll();
 		Assertions.assertTrue(newResource().checkStatus(subscriptionResource.getParametersNoCheck(subscription)));
 	}
@@ -450,7 +450,7 @@ public class VmAzurePluginResourceTest extends AbstractServerTest {
 	 * Authority does not respond : no defined mock
 	 */
 	@Test
-	public void checkStatusAuthorityFailed() {
+	void checkStatusAuthorityFailed() {
 		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
 			resource.checkStatus(subscriptionResource.getParametersNoCheck(subscription));
 		}), AbstractAzureToolPluginResource.PARAMETER_KEY, "azure-login");
@@ -460,7 +460,7 @@ public class VmAzurePluginResourceTest extends AbstractServerTest {
 	 * Authority error, client side
 	 */
 	@Test
-	public void checkStatusAuthorityError() {
+	void checkStatusAuthorityError() {
 		Assertions.assertThrows(IllegalStateException.class, () -> {
 			newResourceFailed().checkStatus(subscriptionResource.getParametersNoCheck(subscription));
 		});
@@ -470,7 +470,7 @@ public class VmAzurePluginResourceTest extends AbstractServerTest {
 	 * Authority is valid, but the token cannot be acquired
 	 */
 	@Test
-	public void checkStatusShudownFailed() throws Exception {
+	void checkStatusShudownFailed() throws Exception {
 		prepareMockAuth();
 		httpServer.start();
 		final TaskExecutor taskExecutor = Mockito.mock(TaskExecutor.class);
@@ -487,7 +487,7 @@ public class VmAzurePluginResourceTest extends AbstractServerTest {
 	}
 
 	@Test
-	public void checkStatusNotAccess() throws Exception {
+	void checkStatusNotAccess() throws Exception {
 		final VmAzurePluginResource resource = newResource();
 		prepareMockAuth();
 		httpServer.start();
@@ -497,7 +497,7 @@ public class VmAzurePluginResourceTest extends AbstractServerTest {
 	}
 
 	@Test
-	public void findAllByName() throws Exception {
+	void findAllByName() throws Exception {
 		initSpringSecurityContext(DEFAULT_USER);
 		prepareMockFindAll();
 		final VmAzurePluginResource resource = newResource();
@@ -507,7 +507,7 @@ public class VmAzurePluginResourceTest extends AbstractServerTest {
 	}
 
 	@Test
-	public void findAllByNameNotFound() throws Exception {
+	void findAllByNameNotFound() throws Exception {
 		initSpringSecurityContext(DEFAULT_USER);
 		prepareMockFindAll();
 		final VmAzurePluginResource resource = newResource();
@@ -516,7 +516,7 @@ public class VmAzurePluginResourceTest extends AbstractServerTest {
 	}
 
 	@Test
-	public void findAllByNameNotVisible() throws Exception {
+	void findAllByNameNotVisible() throws Exception {
 		initSpringSecurityContext("any");
 		prepareMockFindAll();
 		final VmAzurePluginResource resource = newResource();
@@ -525,7 +525,7 @@ public class VmAzurePluginResourceTest extends AbstractServerTest {
 	}
 
 	@Test
-	public void execute() throws Exception {
+	void execute() throws Exception {
 		prepareMockVm();
 		final VmAzurePluginResource resource = newResource();
 		httpServer.stubFor(post(urlPathEqualTo(COMPUTE_URL + "/test1/powerOff"))
@@ -539,7 +539,7 @@ public class VmAzurePluginResourceTest extends AbstractServerTest {
 	 * Suspend operation is not supported
 	 */
 	@Test
-	public void executeSuspend() throws Exception {
+	void executeSuspend() throws Exception {
 		prepareMockVm();
 
 		// Nothing to do
@@ -550,7 +550,7 @@ public class VmAzurePluginResourceTest extends AbstractServerTest {
 	 * Power Off execution on VM failed.
 	 */
 	@Test
-	public void executeFailed() throws Exception {
+	void executeFailed() throws Exception {
 		// VM is found
 		prepareMockVm();
 
@@ -565,7 +565,7 @@ public class VmAzurePluginResourceTest extends AbstractServerTest {
 	 * power ON execution on VM that is already powered ON.
 	 */
 	@Test
-	public void executeUselessAction() throws Exception {
+	void executeUselessAction() throws Exception {
 		// VM is found : is ON
 		prepareMockVm();
 		newResource().execute(subscription, VmOperation.ON);
@@ -575,7 +575,7 @@ public class VmAzurePluginResourceTest extends AbstractServerTest {
 	 * Dummy bean test to check enforced not null vmSize name.
 	 */
 	@Test
-	public void vmSize() {
+	void vmSize() {
 		Assertions.assertEquals("name", new VmSize("name").getName());
 		VmSize size = new VmSize();
 		Assertions.assertNull(size.getName());
@@ -584,14 +584,14 @@ public class VmAzurePluginResourceTest extends AbstractServerTest {
 	}
 
 	@Test
-	public void vmSizeInvalidName() {
+	void vmSizeInvalidName() {
 		Assertions.assertThrows(NullPointerException.class, () -> {
 			new VmSize(null).getClass();
 		});
 	}
 
 	@Test
-	public void vmSizeInvalidName2() {
+	void vmSizeInvalidName2() {
 		Assertions.assertThrows(NullPointerException.class, () -> {
 			new VmSize().setName(null);
 		});
