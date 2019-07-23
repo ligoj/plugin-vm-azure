@@ -22,7 +22,7 @@ define(function () {
 			var result = '';
 			if (subscription.parameters && subscription.parameters['service:vm:azure:subscription'] && subscription.parameters['service:vm:azure:subscription'] && subscription.parameters['service:vm:azure:name']) {
 				// Add portal link directly to this VM
-				result += current.$super('renderServicelink')('home', 'https://portal.azure.com/#resource/subscriptions/'
+				result += current.$super('renderServiceLink')('home', 'https://portal.azure.com/#resource/subscriptions/'
 				 + subscription.parameters['service:vm:azure:subscription'] + '/resourceGroups/'
 				 + subscription.parameters['service:vm:azure:resource-group'] + '/providers/Microsoft.Compute/virtualMachines/'
 				 + subscription.parameters['service:vm:azure:name'] + '/overview', 'service:vm:azure:portal', null, ' target="_blank"');
