@@ -5,7 +5,7 @@
 		<groupId>org.ligoj.api</groupId>
 		<artifactId>plugin-parent</artifactId>
 		<version>3.2.4</version>
-		<relativePath />
+		<relativePath/>
 	</parent>
 
 	<groupId>org.ligoj.plugin</groupId>
@@ -30,7 +30,7 @@
 		<dependency>
 			<groupId>com.microsoft.azure</groupId>
 			<artifactId>adal4j</artifactId>
-			<version>1.5.0</version>
+			<version>1.6.1</version>
 			<exclusions>
 				<exclusion>
 					<groupId>javax.mail</groupId>
