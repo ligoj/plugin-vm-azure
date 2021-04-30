@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>org.ligoj.api</groupId>
 		<artifactId>plugin-parent</artifactId>
-		<version>3.2.4</version>
+		<version>3.2.5</version>
 		<relativePath />
 	</parent>
 
@@ -30,7 +30,7 @@
 		<dependency>
 			<groupId>com.microsoft.azure</groupId>
 			<artifactId>adal4j</artifactId>
-			<version>1.5.0</version>
+			<version>1.6.6</version>
 			<exclusions>
 				<exclusion>
 					<groupId>javax.mail</groupId>
@@ -84,11 +84,12 @@
 
 	<profiles>
 		<profile>
-			<id>bintray</id>
+			<id>github</id>
 			<distributionManagement>
 				<repository>
-					<id>bintray-ligoj-maven-repo</id>
-					<url>https://api.bintray.com/maven/ligoj/maven-repo/plugin-vm-azure/;publish=1</url>
+					<id>github-ligoj</id>
+					<name>GitHub Packages</name>
+					<url>https://maven.pkg.github.com/ligoj/plugin-vm-azure</url>
 				</repository>
 			</distributionManagement>
 		</profile>
