@@ -35,10 +35,8 @@ import org.ligoj.app.plugin.vm.VmResource;
 import org.ligoj.app.plugin.vm.azure.AzureNic.AzureIpConfiguration;
 import org.ligoj.app.plugin.vm.azure.AzureNic.AzureIpConfigurationProperties;
 import org.ligoj.app.plugin.vm.azure.AzurePublicIp.AzureDns;
-import org.ligoj.app.plugin.vm.azure.AzureVmList.AzureVmDetails;
 import org.ligoj.app.plugin.vm.azure.AzureVmList.AzureVmEntry;
 import org.ligoj.app.plugin.vm.azure.AzureVmList.AzureVmNicRef;
-import org.ligoj.app.plugin.vm.azure.AzureVmList.AzureVmOs;
 import org.ligoj.app.plugin.vm.dao.VmScheduleRepository;
 import org.ligoj.app.plugin.vm.execution.VmExecutionServicePlugin;
 import org.ligoj.app.plugin.vm.model.VmOperation;
@@ -55,7 +53,7 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * Azure VM resource.
- * 
+ *
  * @see <a href="https://azure.microsoft.com/api/v2/pricing/mysql/calculator/?culture=en-us&discount=mosp">MySQL</a>
  */
 @Path(VmAzurePluginResource.URL)
@@ -280,9 +278,9 @@ public class VmAzurePluginResource extends AbstractAzureToolPluginResource imple
 		}
 
 		// Get all VMs and then filter by its name or id
-		final Map<String, String> parameters = pvResource.getNodeParameters(node);
-		final String vmJson = StringUtils.defaultString(getAzureResource(parameters, FIND_VM_URL), "{\"value\":[]}");
-		final AzureVmList azure = objectMapper.readValue(vmJson, AzureVmList.class);
+		final var parameters = pvResource.getNodeParameters(node);
+		final var vmJson = StringUtils.defaultString(getAzureResource(parameters, FIND_VM_URL), "{\"value\":[]}");
+		final var azure = objectMapper.readValue(vmJson, AzureVmList.class);
 		return azure.getValue().stream().filter(vm -> StringUtils.containsIgnoreCase(vm.getName(), criteria))
 				.map(v -> toVm(v, null)).sorted().collect(Collectors.toList());
 	}
@@ -309,8 +307,8 @@ public class VmAzurePluginResource extends AbstractAzureToolPluginResource imple
 	 * @return The merge VM details.
 	 */
 	private AzureVm toVm(final AzureVmEntry azureVm, final BiFunction<String, String, VmSize> sizeProvider) {
-		final AzureVm result = new AzureVm();
-		final AzureVmDetails properties = azureVm.getProperties();
+		final var result = new AzureVm();
+		final var properties = azureVm.getProperties();
 		result.setId(azureVm.getName()); // ID is the name for Azure
 		result.setInternalId(properties.getVmId());
 		result.setName(azureVm.getName());
@@ -318,14 +316,14 @@ public class VmAzurePluginResource extends AbstractAzureToolPluginResource imple
 
 		// Instance type details if available
 		if (sizeProvider != null) {
-			final String instanceType = properties.getHardwareProfile().get("vmSize");
-			final VmSize size = sizeProvider.apply(instanceType, azureVm.getLocation());
+			final var instanceType = properties.getHardwareProfile().get("vmSize");
+			final var size = sizeProvider.apply(instanceType, azureVm.getLocation());
 			result.setCpu(size.getNumberOfCores());
 			result.setRam(size.getMemoryInMB());
 		}
 
 		// OS
-		final AzureVmOs image = properties.getStorageProfile().getImageReference();
+		final var image = properties.getStorageProfile().getImageReference();
 		if (image.getOffer() == null) {
 			// From image
 			result.setOs(properties.getStorageProfile().getOsDisk().getOsType() + " ("
@@ -343,22 +341,22 @@ public class VmAzurePluginResource extends AbstractAzureToolPluginResource imple
 
 	@Override
 	public AzureVm getVmDetails(final Map<String, String> parameters) {
-		final String name = parameters.get(PARAMETER_VM);
-		final AzureCurlProcessor processor = new AzureCurlProcessor();
+		final var name = parameters.get(PARAMETER_VM);
+		final var processor = new AzureCurlProcessor();
 		try {
 			// Associate the oAuth token to the processor
 			authenticate(parameters, processor);
 
 			// Get the VM data
-			final String vmJson = getVmResource(name, parameters, processor, VM_URL.replace("{vm}", name));
+			final var vmJson = getVmResource(name, parameters, processor, VM_URL.replace("{vm}", name));
 
 			// VM as been found, return the details with status
-			final AzureVmEntry azure = readValue(vmJson, AzureVmEntry.class);
+			final var azure = readValue(vmJson, AzureVmEntry.class);
 
 			// Get instance details
-			final String azSub = parameters.get(PARAMETER_SUBSCRIPTION);
+			final var azSub = parameters.get(PARAMETER_SUBSCRIPTION);
 			final BiFunction<String, String, VmSize> sizes = (t, l) -> toVmSize(parameters, azSub, t, l);
-			final AzureVm vm = toVmStatus(azure, sizes);
+			final var vm = toVmStatus(azure, sizes);
 			vm.setNetworks(new ArrayList<>());
 
 			// Get network data for each network references
@@ -445,8 +443,8 @@ public class VmAzurePluginResource extends AbstractAzureToolPluginResource imple
 	protected AzureVmEntry getAzureVm(final Map<String, String> parameters) throws IOException {
 
 		// Get all VMs and then filter by its name or id
-		final String name = parameters.get(PARAMETER_VM);
-		final String vmJson = checkResponse(name, getAzureResource(parameters, VM_URL.replace("{vm}", name)));
+		final var name = parameters.get(PARAMETER_VM);
+		final var vmJson = checkResponse(name, getAzureResource(parameters, VM_URL.replace("{vm}", name)));
 
 		// VM as been found, return the details with status
 		return objectMapper.readValue(vmJson, AzureVmEntry.class);
@@ -456,11 +454,11 @@ public class VmAzurePluginResource extends AbstractAzureToolPluginResource imple
 	 * Build a described {@link AzureVm} bean the JSON VM instance view.
 	 */
 	private AzureVm toVmStatus(final AzureVmEntry azureVm, BiFunction<String, String, VmSize> sizeProvider) {
-		final AzureVm result = toVm(azureVm, sizeProvider);
-		final AzureVmDetails properties = azureVm.getProperties();
+		final var result = toVm(azureVm, sizeProvider);
+		final var properties = azureVm.getProperties();
 
 		// State
-		final List<AzureVmList.VmStatus> statuses = properties.getInstanceView().getStatuses();
+		final var statuses = properties.getInstanceView().getStatuses();
 		result.setStatus(getStatus(statuses));
 		result.setBusy(isBusy(statuses));
 		result.setDeployed(isDeployed(statuses));
@@ -503,7 +501,7 @@ public class VmAzurePluginResource extends AbstractAzureToolPluginResource imple
 	@Override
 	public SubscriptionStatusWithData checkSubscriptionStatus(final int subscription, final String node,
 			final Map<String, String> parameters) {
-		final SubscriptionStatusWithData status = new SubscriptionStatusWithData();
+		final var status = new SubscriptionStatusWithData();
 		status.put("vm", getVmDetails(parameters));
 		status.put("schedules", vmScheduleRepository.countBySubscription(subscription));
 		return status;
@@ -511,14 +509,14 @@ public class VmAzurePluginResource extends AbstractAzureToolPluginResource imple
 
 	@Override
 	public void execute(final int subscription, final VmOperation operation) {
-		final Map<String, String> parameters = subscriptionResource.getParametersNoCheck(subscription);
+		final var parameters = subscriptionResource.getParametersNoCheck(subscription);
 
 		// First get VM state
-		final AzureVm vm = getVmDetails(parameters);
-		final VmStatus status = vm.getStatus();
+		final var vm = getVmDetails(parameters);
+		final var status = vm.getStatus();
 
 		// Get the right operation depending on the current state
-		final VmOperation operationF = failSafeOperation(status, operation);
+		final var operationF = failSafeOperation(status, operation);
 		if (operationF == null) {
 			// Final operation is considered as useless
 			log.info("Requested operation {} is marked as useless considering the status {} of vm {}", operation,
@@ -567,7 +565,7 @@ public class VmAzurePluginResource extends AbstractAzureToolPluginResource imple
 	@CacheResult(cacheName = "azure-sizes")
 	public Map<String, VmSize> getInstanceSizes(@CacheKey final String azSub, @CacheKey final String location,
 			final Map<String, String> parameters) throws IOException {
-		final String jsonSizes = getAzureResource(parameters,
+		final var jsonSizes = getAzureResource(parameters,
 				SIZES_URL.replace("{subscriptionId}", azSub).replace("{location}", location));
 		return objectMapper.readValue(StringUtils.defaultString(jsonSizes, "{\"value\":[]}"), VmSizes.class).getValue()
 				.stream().collect(Collectors.toMap(VmSize::getName, Function.identity()));

@@ -94,7 +94,7 @@ public abstract class AbstractAzureToolPluginResource extends AbstractToolPlugin
 
 	/**
 	 * Tenant ID from the directory identifier for sample.
-	 * 
+	 *
 	 * @see <a href=
 	 *      "https://portal.azure.com/#blade/Microsoft_AAD_IAM/ActiveDirectoryMenuBlade/Properties">ActiveDirectoryMenuBlade</a>
 	 */
@@ -123,7 +123,7 @@ public abstract class AbstractAzureToolPluginResource extends AbstractToolPlugin
 
 	/**
 	 * Authenticate using the cache API token.
-	 * 
+	 *
 	 * @param tenant    The tenant UID.
 	 * @param principal The application UID.
 	 * @param key       The token API key.
@@ -146,14 +146,14 @@ public abstract class AbstractAzureToolPluginResource extends AbstractToolPlugin
 	 * Get the Azure bearer token from the authority.
 	 */
 	private String getAccessTokenFromUserCredentials(final String tenant, final String principal, final String key) {
-		final ExecutorService service = newExecutorService();
+		final var service = newExecutorService();
 		try {
-			final AuthenticationContext context = newAuthenticationContext(tenant, service);
+			final var context = newAuthenticationContext(tenant, service);
 			/*
 			 * Replace {client_id} with ApplicationID and {password} with password that were used to create Service
 			 * Principal above.
 			 */
-			final ClientCredential credential = new ClientCredential(principal, key);
+			final var credential = new ClientCredential(principal, key);
 			return context.acquireToken(getManagementUrl(), credential, null).get().getAccessToken();
 		} catch (final ExecutionException | InterruptedException | MalformedURLException e) {
 			// Authentication failed
@@ -166,7 +166,7 @@ public abstract class AbstractAzureToolPluginResource extends AbstractToolPlugin
 
 	/**
 	 * Create and return a new executor pool service.
-	 * 
+	 *
 	 * @return A new executor pool service.
 	 */
 	protected ExecutorService newExecutorService() {
@@ -175,7 +175,7 @@ public abstract class AbstractAzureToolPluginResource extends AbstractToolPlugin
 
 	/**
 	 * Create a new {@link AuthenticationContext}
-	 * 
+	 *
 	 * @param tenant  The tenant identifier.
 	 * @param service executor service.
 	 * @return the new authenticated context.
@@ -188,7 +188,7 @@ public abstract class AbstractAzureToolPluginResource extends AbstractToolPlugin
 
 	/**
 	 * Return the authority token provider end-point URL.
-	 * 
+	 *
 	 * @return The authority token provider end-point URL.
 	 */
 	private String getAuthority() {
@@ -197,7 +197,7 @@ public abstract class AbstractAzureToolPluginResource extends AbstractToolPlugin
 
 	/**
 	 * Return the authentication retries.
-	 * 
+	 *
 	 * @return The authentication retries.
 	 */
 	protected int getRetries() {
@@ -206,7 +206,7 @@ public abstract class AbstractAzureToolPluginResource extends AbstractToolPlugin
 
 	/**
 	 * Return the management URL.
-	 * 
+	 *
 	 * @return The management URL.
 	 */
 	protected String getManagementUrl() {
@@ -215,7 +215,7 @@ public abstract class AbstractAzureToolPluginResource extends AbstractToolPlugin
 
 	/**
 	 * Return the API version used to query the Azure REST API.
-	 * 
+	 *
 	 * @return API version.
 	 */
 	protected String getApiVersion() {
@@ -224,14 +224,14 @@ public abstract class AbstractAzureToolPluginResource extends AbstractToolPlugin
 
 	/**
 	 * Prepare an authenticated connection to Azure. The given processor would be updated with the security token.
-	 * 
+	 *
 	 * @param parameters The subscription parameters.
 	 * @param processor  The processor used to authenticate and execute the request.
 	 */
 	protected void authenticate(final Map<String, String> parameters, final AzureCurlProcessor processor) {
-		final String principal = parameters.get(PARAMETER_APPID);
-		final String key = StringUtils.trimToEmpty(parameters.get(PARAMETER_KEY));
-		final String tenant = StringUtils.trimToEmpty(parameters.get(PARAMETER_TENANT));
+		final var principal = parameters.get(PARAMETER_APPID);
+		final var key = StringUtils.trimToEmpty(parameters.get(PARAMETER_KEY));
+		final var tenant = StringUtils.trimToEmpty(parameters.get(PARAMETER_TENANT));
 
 		// Authentication request using cache
 		processor.setToken(authenticate(tenant, principal, key));
@@ -239,7 +239,7 @@ public abstract class AbstractAzureToolPluginResource extends AbstractToolPlugin
 
 	/**
 	 * Return a Azure's resource after an authentication. Authentication will be done to get the data.
-	 * 
+	 *
 	 * @param parameters The subscription parameters.
 	 * @param resource   The internal resource. Appended to the base management URL. This URL may contain parameters to
 	 *                   replace. Supported parameters are : <code>{apiVersion}</code>,
@@ -253,7 +253,7 @@ public abstract class AbstractAzureToolPluginResource extends AbstractToolPlugin
 	/**
 	 * Return an Azure resource after an authentication. Return <code>null</code> when the resource is not found.
 	 * Authentication is requested using a token from a cache.
-	 * 
+	 *
 	 * @param parameters The subscription parameters.
 	 * @param method     The HHTTP method.
 	 * @param resource   The internal resource. Appended to the base management URL. This URL may contain parameters to
@@ -263,9 +263,9 @@ public abstract class AbstractAzureToolPluginResource extends AbstractToolPlugin
 	 */
 	protected String authenticateAndExecute(final Map<String, String> parameters, final String method,
 			final String resource) {
-		final AzureCurlProcessor processor = new AzureCurlProcessor();
+		final var processor = new AzureCurlProcessor();
 		authenticate(parameters, processor);
-		final String result = execute(processor, method, buildUrl(parameters, resource), "");
+		final var result = execute(processor, method, buildUrl(parameters, resource), "");
 		processor.close();
 		return result;
 	}
@@ -273,7 +273,7 @@ public abstract class AbstractAzureToolPluginResource extends AbstractToolPlugin
 	/**
 	 * Build a fully qualified management URL from the target resource and the subscription parameters. Replace
 	 * resourceGroup, apiVersion, subscription, and VM name when available within the resource URL.
-	 * 
+	 *
 	 * @param parameters The subscription parameters.
 	 * @param resource   Resource URL with parameters to replace.
 	 * @return The target URL with interpolated variables.
@@ -287,7 +287,7 @@ public abstract class AbstractAzureToolPluginResource extends AbstractToolPlugin
 	/**
 	 * Return an Azure resource. Return <code>null</code> when the resource is not found. Authentication should be
 	 * proceeded before for authenticated query.
-	 * 
+	 *
 	 * @param processor The processor used to query the resource.
 	 * @param method    The HHTTP method.
 	 * @param url       The base URL.
@@ -297,7 +297,7 @@ public abstract class AbstractAzureToolPluginResource extends AbstractToolPlugin
 	protected String execute(final CurlProcessor processor, final String method, final String url,
 			final String resource) {
 		// Get the resource using the preempted authentication
-		final CurlRequest request = new CurlRequest(method, StringUtils
+		final var request = new CurlRequest(method, StringUtils
 				.removeEnd(StringUtils.appendIfMissing(url, "/") + StringUtils.removeStart(resource, "/"), "/"), null);
 		request.setSaveResponse(true);
 
@@ -309,7 +309,7 @@ public abstract class AbstractAzureToolPluginResource extends AbstractToolPlugin
 	/**
 	 * Check the server is available with enough permission to query VM. Requires "VIRTUAL MACHINE CONTRIBUTOR"
 	 * permission.
-	 * 
+	 *
 	 * @param parameters The subscription parameters.
 	 */
 	protected void validateAdminAccess(final Map<String, String> parameters) {

@@ -11,8 +11,6 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -26,7 +24,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.ligoj.app.AbstractServerTest;
-import org.ligoj.app.api.SubscriptionStatusWithData;
 import org.ligoj.app.model.Node;
 import org.ligoj.app.model.Parameter;
 import org.ligoj.app.model.ParameterValue;
@@ -112,7 +109,7 @@ class VmAzurePluginResourceTest extends AbstractServerTest {
 
 	@Test
 	void getVersion() throws Exception {
-		final String version = resource.getVersion(subscription);
+		final var version = resource.getVersion(subscription);
 		Assertions.assertEquals("2017-03-30", version);
 	}
 
@@ -122,7 +119,7 @@ class VmAzurePluginResourceTest extends AbstractServerTest {
 
 		// Invoke create for an already created entity, since for now, there is
 		// nothing but validation pour SonarQube
-		final VmAzurePluginResource resource = newResource();
+		final var resource = newResource();
 		resource.link(this.subscription);
 
 		// Nothing to validate for now...
@@ -133,8 +130,8 @@ class VmAzurePluginResourceTest extends AbstractServerTest {
 		prepareMockAuth();
 		httpServer.start();
 
-		final VmAzurePluginResource resource = newResource();
-		final Map<String, String> parameters = pvResource.getNodeParameters("service:vm:azure:test");
+		final var resource = newResource();
+		final var parameters = pvResource.getNodeParameters("service:vm:azure:test");
 		parameters.put(VmAzurePluginResource.PARAMETER_VM, "0");
 		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
 			resource.getVmDetails(parameters);
@@ -145,10 +142,10 @@ class VmAzurePluginResourceTest extends AbstractServerTest {
 	void getVmDetails() throws Exception {
 		prepareMockVm();
 
-		final Map<String, String> parameters = pvResource.getNodeParameters("service:vm:azure:test");
+		final var parameters = pvResource.getNodeParameters("service:vm:azure:test");
 		parameters.put(VmAzurePluginResource.PARAMETER_VM, "test1");
-		final VmAzurePluginResource resource = newResource();
-		final AzureVm vm = resource.getVmDetails(parameters);
+		final var resource = newResource();
+		final var vm = resource.getVmDetails(parameters);
 		checkItem(vm);
 	}
 
@@ -174,8 +171,8 @@ class VmAzurePluginResourceTest extends AbstractServerTest {
 	@Test
 	void checkSubscriptionStatus() throws Exception {
 		prepareMockVm();
-		final VmAzurePluginResource resource = newResource();
-		final SubscriptionStatusWithData nodeStatusWithData = resource.checkSubscriptionStatus(subscription, null,
+		final var resource = newResource();
+		final var nodeStatusWithData = resource.checkSubscriptionStatus(subscription, null,
 				subscriptionResource.getParametersNoCheck(subscription));
 		Assertions.assertTrue(nodeStatusWithData.getStatus().isUp());
 		checkVm((AzureVm) nodeStatusWithData.getData().get("vm"));
@@ -202,12 +199,12 @@ class VmAzurePluginResourceTest extends AbstractServerTest {
 										StandardCharsets.UTF_8))));
 		httpServer.start();
 
-		final VmAzurePluginResource resource = newResource();
-		final SubscriptionStatusWithData nodeStatusWithData = resource.checkSubscriptionStatus(subscription, null,
+		final var resource = newResource();
+		final var nodeStatusWithData = resource.checkSubscriptionStatus(subscription, null,
 				subscriptionResource.getParametersNoCheck(subscription));
 		Assertions.assertTrue(nodeStatusWithData.getStatus().isUp());
 
-		final AzureVm vm = (AzureVm) nodeStatusWithData.getData().get("vm");
+		final var vm = (AzureVm) nodeStatusWithData.getData().get("vm");
 
 		Assertions.assertEquals("vm-id-0", vm.getInternalId());
 		Assertions.assertEquals("test1", vm.getId());
@@ -224,7 +221,7 @@ class VmAzurePluginResourceTest extends AbstractServerTest {
 				.willReturn(aResponse().withStatus(HttpStatus.SC_OK).withBody("<html>")));
 		httpServer.start();
 
-		final VmAzurePluginResource resource = newResource();
+		final var resource = newResource();
 		Assertions.assertThrows(IllegalArgumentException.class, () -> {
 			resource.checkSubscriptionStatus(subscription, null,
 					subscriptionResource.getParametersNoCheck(subscription));
@@ -261,12 +258,12 @@ class VmAzurePluginResourceTest extends AbstractServerTest {
 
 		httpServer.start();
 
-		final VmAzurePluginResource resource = newResource();
-		final SubscriptionStatusWithData nodeStatusWithData = resource.checkSubscriptionStatus(subscription, null,
+		final var resource = newResource();
+		final var nodeStatusWithData = resource.checkSubscriptionStatus(subscription, null,
 				subscriptionResource.getParametersNoCheck(subscription));
 		Assertions.assertTrue(nodeStatusWithData.getStatus().isUp());
 
-		final AzureVm vm = (AzureVm) nodeStatusWithData.getData().get("vm");
+		final var vm = (AzureVm) nodeStatusWithData.getData().get("vm");
 
 		Assertions.assertEquals("vm-id-0", vm.getInternalId());
 		Assertions.assertEquals("test1", vm.getId());
@@ -296,11 +293,11 @@ class VmAzurePluginResourceTest extends AbstractServerTest {
 								StandardCharsets.UTF_8))));
 		httpServer.start();
 
-		final VmAzurePluginResource resource = newResource();
-		final SubscriptionStatusWithData nodeStatusWithData = resource.checkSubscriptionStatus(subscription, null,
+		final var resource = newResource();
+		final var nodeStatusWithData = resource.checkSubscriptionStatus(subscription, null,
 				subscriptionResource.getParametersNoCheck(subscription));
 		Assertions.assertTrue(nodeStatusWithData.getStatus().isUp());
-		final AzureVm item = (AzureVm) nodeStatusWithData.getData().get("vm");
+		final var item = (AzureVm) nodeStatusWithData.getData().get("vm");
 		checkItem(item);
 		Assertions.assertEquals(VmStatus.POWERED_OFF, item.getStatus());
 		Assertions.assertEquals(0, item.getCpu());
@@ -326,11 +323,11 @@ class VmAzurePluginResourceTest extends AbstractServerTest {
 						.willReturn(aResponse().withStatus(HttpStatus.SC_OK).withBody("///DUMMY")));
 		httpServer.start();
 
-		final VmAzurePluginResource resource = newResource();
-		final SubscriptionStatusWithData nodeStatusWithData = resource.checkSubscriptionStatus(subscription, null,
+		final var resource = newResource();
+		final var nodeStatusWithData = resource.checkSubscriptionStatus(subscription, null,
 				subscriptionResource.getParametersNoCheck(subscription));
 		Assertions.assertTrue(nodeStatusWithData.getStatus().isUp());
-		final AzureVm item = (AzureVm) nodeStatusWithData.getData().get("vm");
+		final var item = (AzureVm) nodeStatusWithData.getData().get("vm");
 		checkItem(item);
 		Assertions.assertEquals(VmStatus.POWERED_OFF, item.getStatus());
 		Assertions.assertEquals(0, item.getCpu());
@@ -405,7 +402,7 @@ class VmAzurePluginResourceTest extends AbstractServerTest {
 	}
 
 	private ExecutorService newExecutorService() {
-		final TaskExecutor taskExecutor = Mockito.mock(TaskExecutor.class);
+		final var taskExecutor = Mockito.mock(TaskExecutor.class);
 		return new ExecutorServiceAdapter(taskExecutor) {
 
 			@Override
@@ -418,14 +415,13 @@ class VmAzurePluginResourceTest extends AbstractServerTest {
 
 	private VmAzurePluginResource newResource(final ExecutorService service)
 			throws InterruptedException, ExecutionException, MalformedURLException {
-		VmAzurePluginResource resource = new VmAzurePluginResource();
+		var resource = new VmAzurePluginResource();
 		applicationContext.getAutowireCapableBeanFactory().autowireBean(resource);
 		resource = Mockito.spy(resource);
-		final AuthenticationContext context = Mockito.mock(AuthenticationContext.class);
+		final var context = Mockito.mock(AuthenticationContext.class);
 		@SuppressWarnings("unchecked")
 		final Future<AuthenticationResult> future = Mockito.mock(Future.class);
-		final AuthenticationResult result = new AuthenticationResult("-token-", "-token-", "-token-", 10000, "-token-",
-				null, true);
+		final var result = new AuthenticationResult("-token-", "-token-", "-token-", 10000, "-token-", null, true);
 		Mockito.doReturn(result).when(future).get();
 		Mockito.doReturn(future).when(context).acquireToken(ArgumentMatchers.anyString(),
 				ArgumentMatchers.any(ClientCredential.class), ArgumentMatchers.any());
@@ -436,8 +432,8 @@ class VmAzurePluginResourceTest extends AbstractServerTest {
 	}
 
 	private VmAzurePluginResource newResourceFailed() throws MalformedURLException {
-		final ExecutorService service = newExecutorService();
-		VmAzurePluginResource resource = new VmAzurePluginResource();
+		final var service = newExecutorService();
+		var resource = new VmAzurePluginResource();
 		applicationContext.getAutowireCapableBeanFactory().autowireBean(resource);
 		resource = Mockito.spy(resource);
 		Mockito.doThrow(IllegalStateException.class).when(resource)
@@ -473,8 +469,8 @@ class VmAzurePluginResourceTest extends AbstractServerTest {
 	void checkStatusShudownFailed() throws Exception {
 		prepareMockAuth();
 		httpServer.start();
-		final TaskExecutor taskExecutor = Mockito.mock(TaskExecutor.class);
-		final VmAzurePluginResource resource = newResource(new ExecutorServiceAdapter(taskExecutor) {
+		final var taskExecutor = Mockito.mock(TaskExecutor.class);
+		final var resource = newResource(new ExecutorServiceAdapter(taskExecutor) {
 
 			@Override
 			public void shutdown() {
@@ -488,7 +484,7 @@ class VmAzurePluginResourceTest extends AbstractServerTest {
 
 	@Test
 	void checkStatusNotAccess() throws Exception {
-		final VmAzurePluginResource resource = newResource();
+		final var resource = newResource();
 		prepareMockAuth();
 		httpServer.start();
 		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
@@ -500,8 +496,8 @@ class VmAzurePluginResourceTest extends AbstractServerTest {
 	void findAllByName() throws Exception {
 		initSpringSecurityContext(DEFAULT_USER);
 		prepareMockFindAll();
-		final VmAzurePluginResource resource = newResource();
-		final List<AzureVm> projects = resource.findAllByName("service:vm:azure:test", "est"); // "=test1"
+		final var resource = newResource();
+		final var projects = resource.findAllByName("service:vm:azure:test", "est"); // "=test1"
 		Assertions.assertEquals(2, projects.size());
 		checkItem(projects.get(0));
 	}
@@ -510,8 +506,8 @@ class VmAzurePluginResourceTest extends AbstractServerTest {
 	void findAllByNameNotFound() throws Exception {
 		initSpringSecurityContext(DEFAULT_USER);
 		prepareMockFindAll();
-		final VmAzurePluginResource resource = newResource();
-		final List<AzureVm> projects = resource.findAllByName("service:vm:azure:test", "any");
+		final var resource = newResource();
+		final var projects = resource.findAllByName("service:vm:azure:test", "any");
 		Assertions.assertEquals(0, projects.size());
 	}
 
@@ -519,15 +515,15 @@ class VmAzurePluginResourceTest extends AbstractServerTest {
 	void findAllByNameNotVisible() throws Exception {
 		initSpringSecurityContext("any");
 		prepareMockFindAll();
-		final VmAzurePluginResource resource = newResource();
-		final List<AzureVm> projects = resource.findAllByName("service:vm:azure:test", "est"); // "=test1"
+		final var resource = newResource();
+		final var projects = resource.findAllByName("service:vm:azure:test", "est"); // "=test1"
 		Assertions.assertEquals(0, projects.size());
 	}
 
 	@Test
 	void execute() throws Exception {
 		prepareMockVm();
-		final VmAzurePluginResource resource = newResource();
+		final var resource = newResource();
 		httpServer.stubFor(post(urlPathEqualTo(COMPUTE_URL + "/test1/powerOff"))
 				.willReturn(aResponse().withStatus(HttpStatus.SC_OK)));
 
@@ -555,7 +551,7 @@ class VmAzurePluginResourceTest extends AbstractServerTest {
 		prepareMockVm();
 
 		// But execution, failed : not mocked execution URL
-		final VmAzurePluginResource resource = newResource();
+		final var resource = newResource();
 		Assertions.assertEquals("vm-operation-execute", Assertions.assertThrows(BusinessException.class, () -> {
 			resource.execute(subscription, VmOperation.OFF);
 		}).getMessage());
@@ -577,7 +573,7 @@ class VmAzurePluginResourceTest extends AbstractServerTest {
 	@Test
 	void vmSize() {
 		Assertions.assertEquals("name", new VmSize("name").getName());
-		VmSize size = new VmSize();
+		var size = new VmSize();
 		Assertions.assertNull(size.getName());
 		size.setName("name");
 		Assertions.assertEquals("name", size.getName());
