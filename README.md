@@ -2,7 +2,6 @@
 
 [![Build Status](https://travis-ci.org/ligoj/plugin-vm-azure.svg?branch=master)](https://travis-ci.org/ligoj/plugin-vm-azure)
 [![Build Status](https://circleci.com/gh/ligoj/plugin-vm-azure.svg?style=svg)](https://circleci.com/gh/ligoj/plugin-vm-azure)
-[![Build Status](https://semaphoreci.com/api/v1/ligoj/plugin-vm-azure/branches/master/shields_badge.svg)](https://semaphoreci.com/ligoj/plugin-vm-azure)
 [![Build Status](https://ci.appveyor.com/api/projects/status/80sqifivkdifpaxp/branch/master?svg=true)](https://ci.appveyor.com/project/ligoj/plugin-vm-azure/branch/master)
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=org.ligoj.plugin%3Aplugin-vm-azure&metric=coverage)](https://sonarcloud.io/dashboard?id=org.ligoj.plugin%3Aplugin-vm-azure)
 [![Quality Gate](https://sonarcloud.io/api/project_badges/measure?metric=alert_status&project=org.ligoj.plugin:plugin-vm-azure)](https://sonarcloud.io/dashboard/index/org.ligoj.plugin:plugin-vm-azure)
