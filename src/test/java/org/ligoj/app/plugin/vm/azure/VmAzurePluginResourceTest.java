@@ -29,6 +29,7 @@ import org.ligoj.app.model.Parameter;
 import org.ligoj.app.model.ParameterValue;
 import org.ligoj.app.model.Project;
 import org.ligoj.app.model.Subscription;
+import org.ligoj.app.plugin.vm.model.VmExecution;
 import org.ligoj.app.plugin.vm.model.VmOperation;
 import org.ligoj.app.plugin.vm.model.VmStatus;
 import org.ligoj.app.resource.node.ParameterValueResource;
@@ -528,7 +529,14 @@ class VmAzurePluginResourceTest extends AbstractServerTest {
 				.willReturn(aResponse().withStatus(HttpStatus.SC_OK)));
 
 		// Status from ON to OFF
-		resource.execute(subscription, VmOperation.OFF);
+		resource.execute(newExecution(subscription, VmOperation.OFF));
+	}
+
+	private VmExecution newExecution(final int subscription, final VmOperation operation) {
+		final var execution = new VmExecution();
+		execution.setSubscription(em.find(Subscription.class, subscription));
+		execution.setOperation(operation);
+		return execution;
 	}
 
 	/**
@@ -539,7 +547,7 @@ class VmAzurePluginResourceTest extends AbstractServerTest {
 		prepareMockVm();
 
 		// Nothing to do
-		newResource().execute(subscription, VmOperation.SUSPEND);
+		newResource().execute(newExecution(subscription, VmOperation.SUSPEND));
 	}
 
 	/**
@@ -553,7 +561,7 @@ class VmAzurePluginResourceTest extends AbstractServerTest {
 		// But execution, failed : not mocked execution URL
 		final var resource = newResource();
 		Assertions.assertEquals("vm-operation-execute", Assertions.assertThrows(BusinessException.class, () -> {
-			resource.execute(subscription, VmOperation.OFF);
+			resource.execute(newExecution(subscription, VmOperation.OFF));
 		}).getMessage());
 	}
 
@@ -564,7 +572,7 @@ class VmAzurePluginResourceTest extends AbstractServerTest {
 	void executeUselessAction() throws Exception {
 		// VM is found : is ON
 		prepareMockVm();
-		newResource().execute(subscription, VmOperation.ON);
+		newResource().execute(newExecution(subscription, VmOperation.ON));
 	}
 
 	/**

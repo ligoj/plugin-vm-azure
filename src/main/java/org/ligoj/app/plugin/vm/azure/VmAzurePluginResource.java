@@ -39,6 +39,7 @@ import org.ligoj.app.plugin.vm.azure.AzureVmList.AzureVmEntry;
 import org.ligoj.app.plugin.vm.azure.AzureVmList.AzureVmNicRef;
 import org.ligoj.app.plugin.vm.dao.VmScheduleRepository;
 import org.ligoj.app.plugin.vm.execution.VmExecutionServicePlugin;
+import org.ligoj.app.plugin.vm.model.VmExecution;
 import org.ligoj.app.plugin.vm.model.VmOperation;
 import org.ligoj.app.plugin.vm.model.VmStatus;
 import org.ligoj.bootstrap.core.resource.BusinessException;
@@ -508,7 +509,9 @@ public class VmAzurePluginResource extends AbstractAzureToolPluginResource imple
 	}
 
 	@Override
-	public void execute(final int subscription, final VmOperation operation) {
+	public void execute(final VmExecution execution) {
+		final var subscription = execution.getSubscription().getId();
+		final var operation = execution.getOperation();
 		final var parameters = subscriptionResource.getParametersNoCheck(subscription);
 
 		// First get VM state
