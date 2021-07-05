@@ -1,6 +1,6 @@
 # :link: Ligoj Azure VM plugin [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.ligoj.plugin/plugin-vm-azure/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.ligoj.plugin/plugin-vm-azure) [![Download](https://api.bintray.com/packages/ligoj/maven-repo/plugin-vm-azure/images/download.svg) ](https://bintray.com/ligoj/maven-repo/plugin-vm-azure/_latestVersion)
 
-[![Build Status](https://travis-ci.org/ligoj/plugin-vm-azure.svg?branch=master)](https://travis-ci.org/ligoj/plugin-vm-azure)
+[![Build Status](https://travis-ci.com/ligoj/plugin-vm-azure.svg?branch=master)](https://travis-ci.com/ligoj/plugin-vm-azure)
 [![Build Status](https://circleci.com/gh/ligoj/plugin-vm-azure.svg?style=svg)](https://circleci.com/gh/ligoj/plugin-vm-azure)
 [![Build Status](https://ci.appveyor.com/api/projects/status/80sqifivkdifpaxp/branch/master?svg=true)](https://ci.appveyor.com/project/ligoj/plugin-vm-azure/branch/master)
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=org.ligoj.plugin%3Aplugin-vm-azure&metric=coverage)](https://sonarcloud.io/dashboard?id=org.ligoj.plugin%3Aplugin-vm-azure)
