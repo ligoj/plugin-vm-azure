@@ -283,7 +283,7 @@ public class VmAzurePluginResource extends AbstractAzureToolPluginResource imple
 		final var vmJson = StringUtils.defaultString(getAzureResource(parameters, FIND_VM_URL), "{\"value\":[]}");
 		final var azure = objectMapper.readValue(vmJson, AzureVmList.class);
 		return azure.getValue().stream().filter(vm -> StringUtils.containsIgnoreCase(vm.getName(), criteria))
-				.map(v -> toVm(v, null)).sorted().collect(Collectors.toList());
+				.map(v -> toVm(v, null)).sorted().toList();
 	}
 
 	/**
