@@ -15,10 +15,10 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
-import javax.transaction.Transactional;
+import jakarta.transaction.Transactional;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.http.HttpStatus;
+import org.apache.hc.core5.http.HttpStatus;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -81,12 +81,12 @@ class VmAzurePluginResourceTest extends AbstractServerTest {
 		// Only with Spring context
 		persistSystemEntities();
 		persistEntities("csv",
-				new Class[] { Node.class, Parameter.class, Project.class, Subscription.class, ParameterValue.class },
-				StandardCharsets.UTF_8.name());
-		this.subscription = getSubscription("gStack");
+				new Class[]{Node.class, Parameter.class, Project.class, Subscription.class, ParameterValue.class},
+				StandardCharsets.UTF_8);
+		this.subscription = getSubscription("Jupiter");
 
 		// Coverage only
-		resource.getKey();
+		Assertions.assertEquals("service:vm:azure", resource.getKey());
 
 		configuration.put("service:vm:azure:management", "http://localhost:" + MOCK_PORT + "/");
 		configuration.put("service:vm:azure:authority", "https://localhost:" + MOCK_PORT + "/");
@@ -134,9 +134,8 @@ class VmAzurePluginResourceTest extends AbstractServerTest {
 		final var resource = newResource();
 		final var parameters = pvResource.getNodeParameters("service:vm:azure:test");
 		parameters.put(VmAzurePluginResource.PARAMETER_VM, "0");
-		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
-			resource.getVmDetails(parameters);
-		}), VmAzurePluginResource.PARAMETER_VM, "azure-vm");
+		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class,
+				() -> resource.getVmDetails(parameters)), VmAzurePluginResource.PARAMETER_VM, "azure-vm");
 	}
 
 	@Test
@@ -194,10 +193,10 @@ class VmAzurePluginResourceTest extends AbstractServerTest {
 		// Expose VM sizes
 		httpServer.stubFor(get(urlPathEqualTo(
 				"/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Compute/locations/westeurope/vmSizes"))
-						.willReturn(aResponse().withStatus(HttpStatus.SC_OK)
-								.withBody(IOUtils.toString(
-										new ClassPathResource("mock-server/azure/list-sizes.json").getInputStream(),
-										StandardCharsets.UTF_8))));
+				.willReturn(aResponse().withStatus(HttpStatus.SC_OK)
+						.withBody(IOUtils.toString(
+								new ClassPathResource("mock-server/azure/list-sizes.json").getInputStream(),
+								StandardCharsets.UTF_8))));
 		httpServer.start();
 
 		final var resource = newResource();
@@ -223,10 +222,8 @@ class VmAzurePluginResourceTest extends AbstractServerTest {
 		httpServer.start();
 
 		final var resource = newResource();
-		Assertions.assertThrows(IllegalArgumentException.class, () -> {
-			resource.checkSubscriptionStatus(subscription, null,
-					subscriptionResource.getParametersNoCheck(subscription));
-		});
+		Assertions.assertThrows(IllegalArgumentException.class, () -> resource.checkSubscriptionStatus(subscription, null,
+				subscriptionResource.getParametersNoCheck(subscription)));
 	}
 
 	@Test
@@ -240,22 +237,21 @@ class VmAzurePluginResourceTest extends AbstractServerTest {
 								.withBody(IOUtils.toString(
 										new ClassPathResource("mock-server/azure/vm-on.json").getInputStream(),
 										StandardCharsets.UTF_8))));
-
 		// Expose VM sizes
 		httpServer.stubFor(get(urlPathEqualTo(
 				"/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Compute/locations/westeurope/vmSizes"))
-						.willReturn(aResponse().withStatus(HttpStatus.SC_OK)
-								.withBody(IOUtils.toString(
-										new ClassPathResource("mock-server/azure/list-sizes.json").getInputStream(),
-										StandardCharsets.UTF_8))));
+				.willReturn(aResponse().withStatus(HttpStatus.SC_OK)
+						.withBody(IOUtils.toString(
+								new ClassPathResource("mock-server/azure/list-sizes.json").getInputStream(),
+								StandardCharsets.UTF_8))));
 
 		// Only private IP
 		httpServer.stubFor(get(urlPathEqualTo(
 				"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/group1/providers/Microsoft.Network/networkInterfaces/test1637"))
-						.willReturn(aResponse().withStatus(HttpStatus.SC_OK)
-								.withBody(IOUtils.toString(
-										new ClassPathResource("mock-server/azure/vm-nic.json").getInputStream(),
-										StandardCharsets.UTF_8))));
+				.willReturn(aResponse().withStatus(HttpStatus.SC_OK)
+						.withBody(IOUtils.toString(
+								new ClassPathResource("mock-server/azure/vm-nic.json").getInputStream(),
+								StandardCharsets.UTF_8))));
 
 		httpServer.start();
 
@@ -283,15 +279,15 @@ class VmAzurePluginResourceTest extends AbstractServerTest {
 		httpServer
 				.stubFor(get(urlPathEqualTo(COMPUTE_URL + "/test1")).willReturn(aResponse().withStatus(HttpStatus.SC_OK)
 						.withBody(IOUtils.toString(
-								new ClassPathResource("mock-server/azure/vm-stoping.json").getInputStream(),
+								new ClassPathResource("mock-server/azure/vm-stopping.json").getInputStream(),
 								StandardCharsets.UTF_8))));
 
 		// Expose VM sizes
 		httpServer.stubFor(get(urlPathEqualTo(
 				"/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Compute/locations/westeurope/vmSizes"))
-						.willReturn(aResponse().withStatus(HttpStatus.SC_OK).withBody(IOUtils.toString(
-								new ClassPathResource("mock-server/azure/list-sizes-empty.json").getInputStream(),
-								StandardCharsets.UTF_8))));
+				.willReturn(aResponse().withStatus(HttpStatus.SC_OK).withBody(IOUtils.toString(
+						new ClassPathResource("mock-server/azure/list-sizes-empty.json").getInputStream(),
+						StandardCharsets.UTF_8))));
 		httpServer.start();
 
 		final var resource = newResource();
@@ -315,13 +311,13 @@ class VmAzurePluginResourceTest extends AbstractServerTest {
 		httpServer
 				.stubFor(get(urlPathEqualTo(COMPUTE_URL + "/test1")).willReturn(aResponse().withStatus(HttpStatus.SC_OK)
 						.withBody(IOUtils.toString(
-								new ClassPathResource("mock-server/azure/vm-stoping.json").getInputStream(),
+								new ClassPathResource("mock-server/azure/vm-stopping.json").getInputStream(),
 								StandardCharsets.UTF_8))));
 
 		// Expose VM sizes
 		httpServer.stubFor(get(urlPathEqualTo(
 				"/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Compute/locations/westeurope/vmSizes"))
-						.willReturn(aResponse().withStatus(HttpStatus.SC_OK).withBody("///DUMMY")));
+				.willReturn(aResponse().withStatus(HttpStatus.SC_OK).withBody("///DUMMY")));
 		httpServer.start();
 
 		final var resource = newResource();
@@ -360,10 +356,10 @@ class VmAzurePluginResourceTest extends AbstractServerTest {
 		// Expose VM sizes
 		httpServer.stubFor(get(urlPathEqualTo(
 				"/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Compute/locations/westeurope/vmSizes"))
-						.willReturn(aResponse().withStatus(HttpStatus.SC_OK)
-								.withBody(IOUtils.toString(
-										new ClassPathResource("mock-server/azure/list-sizes.json").getInputStream(),
-										StandardCharsets.UTF_8))));
+				.willReturn(aResponse().withStatus(HttpStatus.SC_OK)
+						.withBody(IOUtils.toString(
+								new ClassPathResource("mock-server/azure/list-sizes.json").getInputStream(),
+								StandardCharsets.UTF_8))));
 		httpServer.start();
 	}
 
@@ -371,15 +367,15 @@ class VmAzurePluginResourceTest extends AbstractServerTest {
 		// Expose NIC having IP
 		httpServer.stubFor(get(urlPathEqualTo(
 				"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/group1/providers/Microsoft.Network/networkInterfaces/test1637"))
-						.willReturn(aResponse().withStatus(HttpStatus.SC_OK).withBody(IOUtils.toString(
-								new ClassPathResource("mock-server/azure/vm-nic-with-public.json").getInputStream(),
-								StandardCharsets.UTF_8))));
+				.willReturn(aResponse().withStatus(HttpStatus.SC_OK).withBody(IOUtils.toString(
+						new ClassPathResource("mock-server/azure/vm-nic-with-public.json").getInputStream(),
+						StandardCharsets.UTF_8))));
 		httpServer.stubFor(get(urlPathEqualTo(
 				"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/group1/providers/Microsoft.Network/publicIPAddresses/vm-0PublicIP"))
-						.willReturn(aResponse().withStatus(HttpStatus.SC_OK)
-								.withBody(IOUtils.toString(
-										new ClassPathResource("mock-server/azure/vm-public-ip.json").getInputStream(),
-										StandardCharsets.UTF_8))));
+				.willReturn(aResponse().withStatus(HttpStatus.SC_OK)
+						.withBody(IOUtils.toString(
+								new ClassPathResource("mock-server/azure/vm-public-ip.json").getInputStream(),
+								StandardCharsets.UTF_8))));
 	}
 
 	private void prepareMockFindAll() throws IOException {
@@ -420,8 +416,7 @@ class VmAzurePluginResourceTest extends AbstractServerTest {
 		applicationContext.getAutowireCapableBeanFactory().autowireBean(resource);
 		resource = Mockito.spy(resource);
 		final var context = Mockito.mock(AuthenticationContext.class);
-		@SuppressWarnings("unchecked")
-		final Future<AuthenticationResult> future = Mockito.mock(Future.class);
+		@SuppressWarnings("unchecked") final Future<AuthenticationResult> future = Mockito.mock(Future.class);
 		final var result = new AuthenticationResult("-token-", "-token-", "-token-", 10000, "-token-", null, true);
 		Mockito.doReturn(result).when(future).get();
 		Mockito.doReturn(future).when(context).acquireToken(ArgumentMatchers.anyString(),
@@ -448,9 +443,8 @@ class VmAzurePluginResourceTest extends AbstractServerTest {
 	 */
 	@Test
 	void checkStatusAuthorityFailed() {
-		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
-			resource.checkStatus(subscriptionResource.getParametersNoCheck(subscription));
-		}), AbstractAzureToolPluginResource.PARAMETER_KEY, "azure-login");
+		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class,
+				() -> resource.checkStatus(subscriptionResource.getParametersNoCheck(subscription))), AbstractAzureToolPluginResource.PARAMETER_KEY, "azure-login");
 	}
 
 	/**
@@ -458,16 +452,15 @@ class VmAzurePluginResourceTest extends AbstractServerTest {
 	 */
 	@Test
 	void checkStatusAuthorityError() {
-		Assertions.assertThrows(IllegalStateException.class, () -> {
-			newResourceFailed().checkStatus(subscriptionResource.getParametersNoCheck(subscription));
-		});
+		Assertions.assertThrows(IllegalStateException.class,
+				() -> newResourceFailed().checkStatus(subscriptionResource.getParametersNoCheck(subscription)));
 	}
 
 	/**
 	 * Authority is valid, but the token cannot be acquired
 	 */
 	@Test
-	void checkStatusShudownFailed() throws Exception {
+	void checkStatusShutdownFailed() throws Exception {
 		prepareMockAuth();
 		httpServer.start();
 		final var taskExecutor = Mockito.mock(TaskExecutor.class);
@@ -478,9 +471,8 @@ class VmAzurePluginResourceTest extends AbstractServerTest {
 				throw new IllegalStateException();
 			}
 		});
-		Assertions.assertThrows(IllegalStateException.class, () -> {
-			resource.checkStatus(subscriptionResource.getParametersNoCheck(subscription));
-		});
+		Assertions.assertThrows(IllegalStateException.class,
+				() -> resource.checkStatus(subscriptionResource.getParametersNoCheck(subscription)));
 	}
 
 	@Test
@@ -488,9 +480,8 @@ class VmAzurePluginResourceTest extends AbstractServerTest {
 		final var resource = newResource();
 		prepareMockAuth();
 		httpServer.start();
-		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
-			resource.checkStatus(subscriptionResource.getParametersNoCheck(subscription));
-		}), AbstractAzureToolPluginResource.PARAMETER_SUBSCRIPTION, "azure-admin");
+		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class,
+				() -> resource.checkStatus(subscriptionResource.getParametersNoCheck(subscription))), AbstractAzureToolPluginResource.PARAMETER_SUBSCRIPTION, "azure-admin");
 	}
 
 	@Test
@@ -560,9 +551,8 @@ class VmAzurePluginResourceTest extends AbstractServerTest {
 
 		// But execution, failed : not mocked execution URL
 		final var resource = newResource();
-		Assertions.assertEquals("vm-operation-execute", Assertions.assertThrows(BusinessException.class, () -> {
-			resource.execute(newExecution(subscription, VmOperation.OFF));
-		}).getMessage());
+		Assertions.assertEquals("vm-operation-execute", Assertions.assertThrows(BusinessException.class,
+				() -> resource.execute(newExecution(subscription, VmOperation.OFF))).getMessage());
 	}
 
 	/**
@@ -589,16 +579,12 @@ class VmAzurePluginResourceTest extends AbstractServerTest {
 
 	@Test
 	void vmSizeInvalidName() {
-		Assertions.assertThrows(NullPointerException.class, () -> {
-			new VmSize(null).getClass();
-		});
+		Assertions.assertThrows(NullPointerException.class, () -> new VmSize(null));
 	}
 
 	@Test
 	void vmSizeInvalidName2() {
-		Assertions.assertThrows(NullPointerException.class, () -> {
-			new VmSize().setName(null);
-		});
+		Assertions.assertThrows(NullPointerException.class, () -> new VmSize().setName(null));
 	}
 
 	/**

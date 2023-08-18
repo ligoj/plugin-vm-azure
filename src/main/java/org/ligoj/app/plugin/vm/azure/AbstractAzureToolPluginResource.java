@@ -9,7 +9,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import javax.ws.rs.HttpMethod;
+import jakarta.ws.rs.HttpMethod;
 
 import org.apache.commons.lang3.StringUtils;
 import org.ligoj.app.resource.plugin.AbstractToolPluginResource;
@@ -85,7 +85,7 @@ public abstract class AbstractAzureToolPluginResource extends AbstractToolPlugin
 	/**
 	 * Application/client identifier, used as principal id. Like : "00000000-0000-0000-0000-00000000"
 	 */
-	public static final String PARAMETER_APPID = PLUGIN_KEY + ":application";
+	public static final String PARAMETER_APP_ID = PLUGIN_KEY + ":application";
 
 	/**
 	 * A valid API key. Would be used to retrieve a session token.
@@ -96,7 +96,7 @@ public abstract class AbstractAzureToolPluginResource extends AbstractToolPlugin
 	 * Tenant ID from the directory identifier for sample.
 	 *
 	 * @see <a href=
-	 *      "https://portal.azure.com/#blade/Microsoft_AAD_IAM/ActiveDirectoryMenuBlade/Properties">ActiveDirectoryMenuBlade</a>
+	 * "https://portal.azure.com/#blade/Microsoft_AAD_IAM/ActiveDirectoryMenuBlade/Properties">ActiveDirectoryMenuBlade</a>
 	 */
 	public static final String PARAMETER_TENANT = PLUGIN_KEY + ":tenant";
 
@@ -229,7 +229,7 @@ public abstract class AbstractAzureToolPluginResource extends AbstractToolPlugin
 	 * @param processor  The processor used to authenticate and execute the request.
 	 */
 	protected void authenticate(final Map<String, String> parameters, final AzureCurlProcessor processor) {
-		final var principal = parameters.get(PARAMETER_APPID);
+		final var principal = parameters.get(PARAMETER_APP_ID);
 		final var key = StringUtils.trimToEmpty(parameters.get(PARAMETER_KEY));
 		final var tenant = StringUtils.trimToEmpty(parameters.get(PARAMETER_TENANT));
 
@@ -255,7 +255,7 @@ public abstract class AbstractAzureToolPluginResource extends AbstractToolPlugin
 	 * Authentication is requested using a token from a cache.
 	 *
 	 * @param parameters The subscription parameters.
-	 * @param method     The HHTTP method.
+	 * @param method     The HTTP method.
 	 * @param resource   The internal resource. Appended to the base management URL. This URL may contain parameters to
 	 *                   replace. Supported parameters are : <code>{apiVersion}</code>,
 	 *                   <code>{resourceGroup}</code>,<code>{subscriptionId}</code>.
@@ -279,7 +279,7 @@ public abstract class AbstractAzureToolPluginResource extends AbstractToolPlugin
 	 * @return The target URL with interpolated variables.
 	 */
 	protected String buildUrl(final Map<String, String> parameters, final String resource) {
-		return getManagementUrl() + resource.replace("{apiVersion}", getApiVersion())
+		return StringUtils.removeEnd(getManagementUrl(), "/") + "/" + StringUtils.removeStart(resource, "/").replace("{apiVersion}", getApiVersion())
 				.replace("{resourceGroup}", parameters.getOrDefault(PARAMETER_RESOURCE_GROUP, "-"))
 				.replace("{subscriptionId}", parameters.getOrDefault(PARAMETER_SUBSCRIPTION, "-"));
 	}
@@ -289,9 +289,9 @@ public abstract class AbstractAzureToolPluginResource extends AbstractToolPlugin
 	 * proceeded before for authenticated query.
 	 *
 	 * @param processor The processor used to query the resource.
-	 * @param method    The HHTTP method.
+	 * @param method    The HTTP method.
 	 * @param url       The base URL.
-	 * @param resource  The internal resource URL appended to the base URL parameter. DUplicate '/' are handled.
+	 * @param resource  The internal resource URL appended to the base URL parameter. Duplicate '/' are handled.
 	 * @return The requested azure resource or <code>null</code> when the resource is not found.
 	 */
 	protected String execute(final CurlProcessor processor, final String method, final String url,
