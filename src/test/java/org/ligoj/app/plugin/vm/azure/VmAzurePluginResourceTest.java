@@ -81,7 +81,7 @@ class VmAzurePluginResourceTest extends AbstractServerTest {
 		// Only with Spring context
 		persistSystemEntities();
 		persistEntities("csv",
-				new Class[]{Node.class, Parameter.class, Project.class, Subscription.class, ParameterValue.class},
+				new Class<?>[]{Node.class, Parameter.class, Project.class, Subscription.class, ParameterValue.class},
 				StandardCharsets.UTF_8);
 		this.subscription = getSubscription("Jupiter");
 
@@ -160,9 +160,9 @@ class VmAzurePluginResourceTest extends AbstractServerTest {
 
 		// Check network
 		Assertions.assertEquals(2, item.getNetworks().size());
-		Assertions.assertEquals("10.0.4.20", item.getNetworks().get(0).getIp());
-		Assertions.assertEquals("private", item.getNetworks().get(0).getType());
-		Assertions.assertNull(item.getNetworks().get(0).getDns());
+		Assertions.assertEquals("10.0.4.20", item.getNetworks().getFirst().getIp());
+		Assertions.assertEquals("private", item.getNetworks().getFirst().getType());
+		Assertions.assertNull(item.getNetworks().getFirst().getDns());
 		Assertions.assertEquals("1.2.3.4", item.getNetworks().get(1).getIp());
 		Assertions.assertEquals("public", item.getNetworks().get(1).getType());
 		Assertions.assertEquals("vm-0-b67589.westeurope.cloudapp.azure.com", item.getNetworks().get(1).getDns());
@@ -266,8 +266,8 @@ class VmAzurePluginResourceTest extends AbstractServerTest {
 		Assertions.assertEquals("test1", vm.getId());
 		Assertions.assertEquals("UbuntuServer 16.04-LTS Canonical", vm.getOs());
 		Assertions.assertEquals(1, vm.getNetworks().size());
-		Assertions.assertEquals("10.0.4.20", vm.getNetworks().get(0).getIp());
-		Assertions.assertNull(vm.getNetworks().get(0).getDns());
+		Assertions.assertEquals("10.0.4.20", vm.getNetworks().getFirst().getIp());
+		Assertions.assertNull(vm.getNetworks().getFirst().getDns());
 	}
 
 	@Test
@@ -491,7 +491,7 @@ class VmAzurePluginResourceTest extends AbstractServerTest {
 		final var resource = newResource();
 		final var projects = resource.findAllByName("service:vm:azure:test", "est"); // "=test1"
 		Assertions.assertEquals(2, projects.size());
-		checkItem(projects.get(0));
+		checkItem(projects.getFirst());
 	}
 
 	@Test

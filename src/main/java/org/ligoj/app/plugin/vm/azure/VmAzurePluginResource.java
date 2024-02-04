@@ -206,7 +206,7 @@ public class VmAzurePluginResource extends AbstractAzureToolPluginResource imple
 	/**
 	 * Undeployed provisioning code.
 	 */
-	private static final String UNDEPLOYED_CODE = "PowerState/deallocated";
+	private static final String DEALLOCATED_CODE = "PowerState/deallocated";
 
 	/**
 	 * VM code to {@link VmStatus} mapping.
@@ -280,7 +280,7 @@ public class VmAzurePluginResource extends AbstractAzureToolPluginResource imple
 
 		// Get all VMs and then filter by its name or id
 		final var parameters = pvResource.getNodeParameters(node);
-		final var vmJson = StringUtils.defaultString(getAzureResource(parameters, FIND_VM_URL), "{\"value\":[]}");
+		final var vmJson = Objects.toString(getAzureResource(parameters, FIND_VM_URL), "{\"value\":[]}");
 		final var azure = objectMapper.readValue(vmJson, AzureVmList.class);
 		return azure.getValue().stream().filter(vm -> StringUtils.containsIgnoreCase(vm.getName(), criteria))
 				.map(v -> toVm(v, null)).sorted().toList();
@@ -343,8 +343,7 @@ public class VmAzurePluginResource extends AbstractAzureToolPluginResource imple
 	@Override
 	public AzureVm getVmDetails(final Map<String, String> parameters) {
 		final var name = parameters.get(PARAMETER_VM);
-		final var processor = new AzureCurlProcessor();
-		try {
+		try (var processor = new AzureCurlProcessor()) {
 			// Associate the oAuth token to the processor
 			authenticate(parameters, processor);
 
@@ -364,8 +363,6 @@ public class VmAzurePluginResource extends AbstractAzureToolPluginResource imple
 			getNetworkDetails(name, parameters, processor,
 					azure.getProperties().getNetworkProfile().getNetworkInterfaces(), vm.getNetworks());
 			return vm;
-		} finally {
-			processor.close();
 		}
 	}
 
@@ -486,7 +483,7 @@ public class VmAzurePluginResource extends AbstractAzureToolPluginResource imple
 	 * Return the generic VM status from the Azure statuses
 	 */
 	private boolean isDeployed(final List<AzureVmList.VmStatus> statuses) {
-		return statuses.stream().map(AzureVmList.VmStatus::getCode).anyMatch(UNDEPLOYED_CODE::equals);
+		return statuses.stream().map(AzureVmList.VmStatus::getCode).anyMatch(DEALLOCATED_CODE::equals);
 	}
 
 	@Override
@@ -570,7 +567,7 @@ public class VmAzurePluginResource extends AbstractAzureToolPluginResource imple
 			final Map<String, String> parameters) throws IOException {
 		final var jsonSizes = getAzureResource(parameters,
 				SIZES_URL.replace("{subscriptionId}", azSub).replace("{location}", location));
-		return objectMapper.readValue(StringUtils.defaultString(jsonSizes, "{\"value\":[]}"), VmSizes.class).getValue()
+		return objectMapper.readValue(Objects.toString(jsonSizes, "{\"value\":[]}"), VmSizes.class).getValue()
 				.stream().collect(Collectors.toMap(VmSize::getName, Function.identity()));
 	}
 }
