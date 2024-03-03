@@ -20,9 +20,9 @@ Dashboard features :
 - CPU
 - RAM
 
-# Susbcription parameters
+# Subscription parameters
 * Tenant ID (Directory ID)
-* Application ID (Id of application account of ligoj)
+* Application ID (Identifier of application account of ligoj)
 * Key (secret token of application account of ligoj)
 * Subscription ID
 * Resource group name
@@ -35,7 +35,7 @@ Everything takes place in [Azure Active Directory](https://portal.azure.com/?l=e
 * Click on "New application registration"
 * Fill the form : Name="ligoj", Application type="Web app / API", Sign-on URL=ligoj URL, can be updated later
 * "Create"
-* Click on the create registration
+* Click on the created registration
 * Copy the "Application ID"
 * Click on "Keys" (right panel)
 * In the "Passwords" panel, fill "Key Description" and "Duration", then "Save"

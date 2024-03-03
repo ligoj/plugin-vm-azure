@@ -238,7 +238,7 @@ public abstract class AbstractAzureToolPluginResource extends AbstractToolPlugin
 	}
 
 	/**
-	 * Return a Azure's resource after an authentication. Authentication will be done to get the data.
+	 * Return an Azure's resource after an authentication. Authentication will be done to get the data.
 	 *
 	 * @param parameters The subscription parameters.
 	 * @param resource   The internal resource. Appended to the base management URL. This URL may contain parameters to
