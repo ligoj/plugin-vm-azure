@@ -1,4 +1,4 @@
-# :link: Ligoj Azure VM plugin [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.ligoj.plugin/plugin-vm-azure/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.ligoj.plugin/plugin-vm-azure) [![Download](https://api.bintray.com/packages/ligoj/maven-repo/plugin-vm-azure/images/download.svg) ](https://bintray.com/ligoj/maven-repo/plugin-vm-azure/_latestVersion)
+# :link: Ligoj Azure VM plugin [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.ligoj.plugin/plugin-vm-azure/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.ligoj.plugin/plugin-vm-azure)
 
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=org.ligoj.plugin%3Aplugin-vm-azure&metric=coverage)](https://sonarcloud.io/dashboard?id=org.ligoj.plugin%3Aplugin-vm-azure)
 [![Quality Gate](https://sonarcloud.io/api/project_badges/measure?metric=alert_status&project=org.ligoj.plugin:plugin-vm-azure)](https://sonarcloud.io/dashboard/index/org.ligoj.plugin:plugin-vm-azure)
