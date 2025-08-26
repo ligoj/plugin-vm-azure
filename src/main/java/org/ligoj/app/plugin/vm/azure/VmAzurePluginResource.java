@@ -3,31 +3,12 @@
  */
 package org.ligoj.app.plugin.vm.azure;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.function.BiFunction;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import javax.cache.annotation.CacheKey;
-import javax.cache.annotation.CacheResult;
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.HttpMethod;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.Produces;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
-
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.ligoj.app.api.SubscriptionStatusWithData;
 import org.ligoj.app.dao.NodeRepository;
 import org.ligoj.app.plugin.vm.VmNetwork;
@@ -48,9 +29,13 @@ import org.ligoj.bootstrap.core.validation.ValidationJsonException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import lombok.extern.slf4j.Slf4j;
+import javax.cache.annotation.CacheKey;
+import javax.cache.annotation.CacheResult;
+import java.io.IOException;
+import java.util.*;
+import java.util.function.BiFunction;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * Azure VM resource.
@@ -282,7 +267,7 @@ public class VmAzurePluginResource extends AbstractAzureToolPluginResource imple
 		final var parameters = pvResource.getNodeParameters(node);
 		final var vmJson = Objects.toString(getAzureResource(parameters, FIND_VM_URL), "{\"value\":[]}");
 		final var azure = objectMapper.readValue(vmJson, AzureVmList.class);
-		return azure.getValue().stream().filter(vm -> StringUtils.containsIgnoreCase(vm.getName(), criteria))
+		return azure.getValue().stream().filter(vm -> Strings.CI.contains(vm.getName(), criteria))
 				.map(v -> toVm(v, null)).sorted().toList();
 	}
 

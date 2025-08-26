@@ -3,15 +3,12 @@
  */
 package org.ligoj.app.plugin.vm.azure;
 
-import java.net.MalformedURLException;
-import java.util.Map;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
+import com.microsoft.aad.adal4j.AuthenticationContext;
+import com.microsoft.aad.adal4j.ClientCredential;
 import jakarta.ws.rs.HttpMethod;
-
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.ligoj.app.resource.plugin.AbstractToolPluginResource;
 import org.ligoj.bootstrap.core.curl.CurlCacheToken;
 import org.ligoj.bootstrap.core.curl.CurlProcessor;
@@ -20,10 +17,11 @@ import org.ligoj.bootstrap.core.validation.ValidationJsonException;
 import org.ligoj.bootstrap.resource.system.configuration.ConfigurationResource;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.microsoft.aad.adal4j.AuthenticationContext;
-import com.microsoft.aad.adal4j.ClientCredential;
-
-import lombok.extern.slf4j.Slf4j;
+import java.net.MalformedURLException;
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * The goal of this class is sharing some Azure utilities among multiple plug-ins. But, for now, there is no plug-in
@@ -279,7 +277,7 @@ public abstract class AbstractAzureToolPluginResource extends AbstractToolPlugin
 	 * @return The target URL with interpolated variables.
 	 */
 	protected String buildUrl(final Map<String, String> parameters, final String resource) {
-		return StringUtils.removeEnd(getManagementUrl(), "/") + "/" + StringUtils.removeStart(resource, "/").replace("{apiVersion}", getApiVersion())
+		return Strings.CS.removeEnd(getManagementUrl(), "/") + "/" + Strings.CS.removeStart(resource, "/").replace("{apiVersion}", getApiVersion())
 				.replace("{resourceGroup}", parameters.getOrDefault(PARAMETER_RESOURCE_GROUP, "-"))
 				.replace("{subscriptionId}", parameters.getOrDefault(PARAMETER_SUBSCRIPTION, "-"));
 	}
@@ -297,8 +295,8 @@ public abstract class AbstractAzureToolPluginResource extends AbstractToolPlugin
 	protected String execute(final CurlProcessor processor, final String method, final String url,
 			final String resource) {
 		// Get the resource using the preempted authentication
-		final var request = new CurlRequest(method, StringUtils
-				.removeEnd(StringUtils.appendIfMissing(url, "/") + StringUtils.removeStart(resource, "/"), "/"), null);
+		final var request = new CurlRequest(method, Strings.CS
+				.removeEnd(Strings.CS.appendIfMissing(url, "/") + Strings.CS.removeStart(resource, "/"), "/"), null);
 		request.setSaveResponse(true);
 
 		// Execute the requests
