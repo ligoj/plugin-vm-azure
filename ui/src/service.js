@@ -20,8 +20,7 @@
  *
  * Kept free of Vue SFC imports so it can be unit-tested without a DOM.
  */
-import { h } from 'vue'
-import { VBtn, VChip, VIcon, useI18nStore } from '@ligoj/host'
+import { renderServiceLink, renderDetailsChip, useI18nStore } from '@ligoj/host'
 
 const PARAM_SUBSCRIPTION = 'service:vm:azure:subscription'
 const PARAM_RESOURCE_GROUP = 'service:vm:azure:resource-group'
@@ -40,23 +39,14 @@ function renderFeatures(subscription) {
   const name = params[PARAM_NAME]
   if (!sub || !group || !name) return []
   const { t } = useI18nStore()
-  const href =
-    `https://portal.azure.com/#resource/subscriptions/${sub}` +
-    `/resourceGroups/${group}/providers/Microsoft.Compute/virtualMachines/${name}/overview`
   return [
-    h(
-      VBtn,
-      {
-        icon: true,
-        size: 'small',
-        variant: 'text',
-        title: t('service:vm:azure:portal'),
-        href,
-        target: '_blank',
-        rel: 'noopener noreferrer',
-      },
-      () => h(VIcon, { size: 'small' }, () => 'mdi-microsoft-azure'),
-    ),
+    renderServiceLink({
+      icon: 'mdi-microsoft-azure',
+      href:
+        `https://portal.azure.com/#resource/subscriptions/${sub}` +
+        `/resourceGroups/${group}/providers/Microsoft.Compute/virtualMachines/${name}/overview`,
+      title: t('service:vm:azure:portal'),
+    }),
   ]
 }
 
@@ -69,11 +59,7 @@ function renderDetailsKey(subscription) {
   const name = subscription?.parameters?.[PARAM_NAME]
   if (!name) return null
   const { t } = useI18nStore()
-  return h(
-    VChip,
-    { size: 'small', variant: 'tonal', class: 'mr-1', title: t('service:vm:azure:name') },
-    () => [h(VIcon, { start: true, size: 'small' }, () => 'mdi-microsoft-azure'), ' ', String(name)],
-  )
+  return renderDetailsChip({ icon: 'mdi-microsoft-azure', text: name, title: t('service:vm:azure:name') })
 }
 
 export default { renderFeatures, renderDetailsKey }
