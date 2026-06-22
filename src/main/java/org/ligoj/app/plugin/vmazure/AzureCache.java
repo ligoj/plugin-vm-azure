@@ -4,7 +4,7 @@
 /*
  * Licensed under MIT (https://github.com/ligoj/ligoj/blob/master/LICENSE)
  */
-package org.ligoj.app.plugin.vm.azure;
+package org.ligoj.app.plugin.vmazure;
 
 import com.hazelcast.cache.HazelcastCacheManager;
 import org.ligoj.bootstrap.resource.system.cache.CacheConfigurer;

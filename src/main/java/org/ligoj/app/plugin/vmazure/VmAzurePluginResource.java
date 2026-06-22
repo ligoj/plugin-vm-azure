@@ -1,7 +1,7 @@
 /*
  * Licensed under MIT (https://github.com/ligoj/ligoj/blob/master/LICENSE)
  */
-package org.ligoj.app.plugin.vm.azure;
+package org.ligoj.app.plugin.vmazure;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.ws.rs.*;
@@ -13,11 +13,11 @@ import org.ligoj.app.api.SubscriptionStatusWithData;
 import org.ligoj.app.dao.NodeRepository;
 import org.ligoj.app.plugin.vm.VmNetwork;
 import org.ligoj.app.plugin.vm.VmResource;
-import org.ligoj.app.plugin.vm.azure.AzureNic.AzureIpConfiguration;
-import org.ligoj.app.plugin.vm.azure.AzureNic.AzureIpConfigurationProperties;
-import org.ligoj.app.plugin.vm.azure.AzurePublicIp.AzureDns;
-import org.ligoj.app.plugin.vm.azure.AzureVmList.AzureVmEntry;
-import org.ligoj.app.plugin.vm.azure.AzureVmList.AzureVmNicRef;
+import org.ligoj.app.plugin.vmazure.AzureNic.AzureIpConfiguration;
+import org.ligoj.app.plugin.vmazure.AzureNic.AzureIpConfigurationProperties;
+import org.ligoj.app.plugin.vmazure.AzurePublicIp.AzureDns;
+import org.ligoj.app.plugin.vmazure.AzureVmList.AzureVmEntry;
+import org.ligoj.app.plugin.vmazure.AzureVmList.AzureVmNicRef;
 import org.ligoj.app.plugin.vm.dao.VmScheduleRepository;
 import org.ligoj.app.plugin.vm.execution.VmExecutionServicePlugin;
 import org.ligoj.app.plugin.vm.model.VmExecution;

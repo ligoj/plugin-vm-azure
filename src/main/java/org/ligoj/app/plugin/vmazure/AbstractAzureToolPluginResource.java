@@ -1,7 +1,7 @@
 /*
  * Licensed under MIT (https://github.com/ligoj/ligoj/blob/master/LICENSE)
  */
-package org.ligoj.app.plugin.vm.azure;
+package org.ligoj.app.plugin.vmazure;
 
 import com.microsoft.aad.adal4j.AuthenticationContext;
 import com.microsoft.aad.adal4j.ClientCredential;
