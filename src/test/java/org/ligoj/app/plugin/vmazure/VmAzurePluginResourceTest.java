@@ -11,6 +11,8 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -36,6 +38,7 @@ import org.ligoj.app.resource.node.ParameterValueResource;
 import org.ligoj.app.resource.subscription.SubscriptionResource;
 import org.ligoj.bootstrap.MatcherUtil;
 import org.ligoj.bootstrap.core.resource.BusinessException;
+import org.ligoj.bootstrap.core.security.RbacUserDetails;
 import org.ligoj.bootstrap.core.validation.ValidationJsonException;
 import org.ligoj.bootstrap.resource.system.configuration.ConfigurationResource;
 import org.mockito.ArgumentMatchers;
@@ -44,6 +47,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.core.task.support.ExecutorServiceAdapter;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -484,9 +492,46 @@ class VmAzurePluginResourceTest extends AbstractServerTest {
 				() -> resource.checkStatus(subscriptionResource.getParametersNoCheck(subscription))), AbstractAzureToolPluginResource.PARAMETER_SUBSCRIPTION, "azure-admin");
 	}
 
+
+	/**
+	 * Initialize {@link SecurityContextHolder} for given user. And promoted as administrator.
+	 *
+	 * @param user
+	 *            the user to set in the context.
+	 * @param authorities
+	 *            the optional authorities name
+	 * @return The configured {@link SecurityContext}.
+	 */
+	protected SecurityContext initSpringSecurityContextAdmin(final String user, final GrantedAuthority... authorities) {
+		final var authoritiesAsList = Arrays.asList(authorities);
+		final var userDetails = new RbacUserDetails(user, "N/A", true ,authoritiesAsList);
+		return initSpringSecurityContext(userDetails);
+	}
+
+	/**
+	 * Initialize {@link SecurityContextHolder} for given user.
+	 *
+	 * @param userDetails
+	 *            the user details to set in the context.
+	 * @return The configured {@link SecurityContext}.
+	 */
+	@SuppressWarnings("unchecked")
+	protected SecurityContext initSpringSecurityContext(final User userDetails) {
+		SecurityContextHolder.clearContext();
+		final var context = Mockito.mock(SecurityContext.class);
+		final var authentication = Mockito.mock(Authentication.class);
+		Mockito.when((Collection<GrantedAuthority>) authentication.getAuthorities()).thenReturn( userDetails.getAuthorities());
+		Mockito.when(context.getAuthentication()).thenReturn(authentication);
+		Mockito.when(authentication.getPrincipal()).thenReturn(userDetails);
+		Mockito.when(authentication.getName()).thenReturn(userDetails.getUsername());
+		SecurityContextHolder.setContext(context);
+		return context;
+	}
+
+
 	@Test
 	void findAllByName() throws Exception {
-		initSpringSecurityContext(DEFAULT_USER);
+		initSpringSecurityContextAdmin(DEFAULT_USER);
 		prepareMockFindAll();
 		final var resource = newResource();
 		final var projects = resource.findAllByName("service:vm:azure:test", "est"); // "=test1"
@@ -496,7 +541,7 @@ class VmAzurePluginResourceTest extends AbstractServerTest {
 
 	@Test
 	void findAllByNameNotFound() throws Exception {
-		initSpringSecurityContext(DEFAULT_USER);
+		initSpringSecurityContextAdmin(DEFAULT_USER);
 		prepareMockFindAll();
 		final var resource = newResource();
 		final var projects = resource.findAllByName("service:vm:azure:test", "any");
