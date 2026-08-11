@@ -3,22 +3,10 @@
  */
 package org.ligoj.app.plugin.vmazure;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.get;
-import static com.github.tomakehurst.wiremock.client.WireMock.post;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
-
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
-
+import com.microsoft.aad.adal4j.AuthenticationContext;
+import com.microsoft.aad.adal4j.AuthenticationResult;
+import com.microsoft.aad.adal4j.ClientCredential;
 import jakarta.transaction.Transactional;
-
 import org.apache.commons.io.IOUtils;
 import org.apache.hc.core5.http.HttpStatus;
 import org.junit.jupiter.api.Assertions;
@@ -26,11 +14,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.ligoj.app.AbstractServerTest;
-import org.ligoj.app.model.Node;
-import org.ligoj.app.model.Parameter;
-import org.ligoj.app.model.ParameterValue;
-import org.ligoj.app.model.Project;
-import org.ligoj.app.model.Subscription;
+import org.ligoj.app.model.*;
 import org.ligoj.app.plugin.vm.model.VmExecution;
 import org.ligoj.app.plugin.vm.model.VmOperation;
 import org.ligoj.app.plugin.vm.model.VmStatus;
@@ -42,7 +26,6 @@ import org.ligoj.bootstrap.core.security.RbacUserDetails;
 import org.ligoj.bootstrap.core.validation.ValidationJsonException;
 import org.ligoj.bootstrap.resource.system.configuration.ConfigurationResource;
 import org.mockito.ArgumentMatchers;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.task.TaskExecutor;
@@ -56,9 +39,17 @@ import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import com.microsoft.aad.adal4j.AuthenticationContext;
-import com.microsoft.aad.adal4j.AuthenticationResult;
-import com.microsoft.aad.adal4j.ClientCredential;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static org.mockito.Mockito.*;
 
 /**
  * Test class of {@link VmAzurePluginResource}
@@ -407,7 +398,7 @@ class VmAzurePluginResourceTest extends AbstractServerTest {
 	}
 
 	private ExecutorService newExecutorService() {
-		final var taskExecutor = Mockito.mock(TaskExecutor.class);
+		final var taskExecutor = mock(TaskExecutor.class);
 		return new ExecutorServiceAdapter(taskExecutor) {
 
 			@Override
@@ -422,16 +413,16 @@ class VmAzurePluginResourceTest extends AbstractServerTest {
 			throws InterruptedException, ExecutionException, MalformedURLException {
 		var resource = new VmAzurePluginResource();
 		applicationContext.getAutowireCapableBeanFactory().autowireBean(resource);
-		resource = Mockito.spy(resource);
-		final var context = Mockito.mock(AuthenticationContext.class);
-		@SuppressWarnings("unchecked") final Future<AuthenticationResult> future = Mockito.mock(Future.class);
+		resource = spy(resource);
+		final var context = mock(AuthenticationContext.class);
+		@SuppressWarnings("unchecked") final Future<AuthenticationResult> future = mock(Future.class);
 		final var result = new AuthenticationResult("-token-", "-token-", "-token-", 10000, "-token-", null, true);
-		Mockito.doReturn(result).when(future).get();
-		Mockito.doReturn(future).when(context).acquireToken(ArgumentMatchers.anyString(),
+		doReturn(result).when(future).get();
+		doReturn(future).when(context).acquireToken(ArgumentMatchers.anyString(),
 				ArgumentMatchers.any(ClientCredential.class), ArgumentMatchers.any());
-		Mockito.doReturn(context).when(resource).newAuthenticationContext("11112222-3333-4444-5555-666677778888",
+		doReturn(context).when(resource).newAuthenticationContext("11112222-3333-4444-5555-666677778888",
 				service);
-		Mockito.doReturn(service).when(resource).newExecutorService();
+		doReturn(service).when(resource).newExecutorService();
 		return resource;
 	}
 
@@ -439,10 +430,10 @@ class VmAzurePluginResourceTest extends AbstractServerTest {
 		final var service = newExecutorService();
 		var resource = new VmAzurePluginResource();
 		applicationContext.getAutowireCapableBeanFactory().autowireBean(resource);
-		resource = Mockito.spy(resource);
-		Mockito.doThrow(IllegalStateException.class).when(resource)
+		resource = spy(resource);
+		doThrow(IllegalStateException.class).when(resource)
 				.newAuthenticationContext("11112222-3333-4444-5555-666677778888", service);
-		Mockito.doReturn(service).when(resource).newExecutorService();
+		doReturn(service).when(resource).newExecutorService();
 		return resource;
 	}
 
@@ -471,7 +462,7 @@ class VmAzurePluginResourceTest extends AbstractServerTest {
 	void checkStatusShutdownFailed() throws Exception {
 		prepareMockAuth();
 		httpServer.start();
-		final var taskExecutor = Mockito.mock(TaskExecutor.class);
+		final var taskExecutor = mock(TaskExecutor.class);
 		final var resource = newResource(new ExecutorServiceAdapter(taskExecutor) {
 
 			@Override
@@ -518,12 +509,12 @@ class VmAzurePluginResourceTest extends AbstractServerTest {
 	@SuppressWarnings("unchecked")
 	protected SecurityContext initSpringSecurityContext(final User userDetails) {
 		SecurityContextHolder.clearContext();
-		final var context = Mockito.mock(SecurityContext.class);
-		final var authentication = Mockito.mock(Authentication.class);
-		Mockito.when((Collection<GrantedAuthority>) authentication.getAuthorities()).thenReturn( userDetails.getAuthorities());
-		Mockito.when(context.getAuthentication()).thenReturn(authentication);
-		Mockito.when(authentication.getPrincipal()).thenReturn(userDetails);
-		Mockito.when(authentication.getName()).thenReturn(userDetails.getUsername());
+		final var context = mock(SecurityContext.class);
+		final var authentication = mock(Authentication.class);
+		when((Collection<GrantedAuthority>) authentication.getAuthorities()).thenReturn( userDetails.getAuthorities());
+		when(context.getAuthentication()).thenReturn(authentication);
+		when(authentication.getPrincipal()).thenReturn(userDetails);
+		when(authentication.getName()).thenReturn(userDetails.getUsername());
 		SecurityContextHolder.setContext(context);
 		return context;
 	}
