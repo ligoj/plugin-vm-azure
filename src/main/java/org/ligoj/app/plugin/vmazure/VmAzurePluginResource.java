@@ -3,7 +3,6 @@
  */
 package org.ligoj.app.plugin.vmazure;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import lombok.extern.slf4j.Slf4j;
@@ -13,21 +12,22 @@ import org.ligoj.app.api.SubscriptionStatusWithData;
 import org.ligoj.app.dao.NodeRepository;
 import org.ligoj.app.plugin.vm.VmNetwork;
 import org.ligoj.app.plugin.vm.VmResource;
-import org.ligoj.app.plugin.vmazure.AzureNic.AzureIpConfiguration;
-import org.ligoj.app.plugin.vmazure.AzureNic.AzureIpConfigurationProperties;
-import org.ligoj.app.plugin.vmazure.AzurePublicIp.AzureDns;
-import org.ligoj.app.plugin.vmazure.AzureVmList.AzureVmEntry;
-import org.ligoj.app.plugin.vmazure.AzureVmList.AzureVmNicRef;
 import org.ligoj.app.plugin.vm.dao.VmScheduleRepository;
 import org.ligoj.app.plugin.vm.execution.VmExecutionServicePlugin;
 import org.ligoj.app.plugin.vm.model.VmExecution;
 import org.ligoj.app.plugin.vm.model.VmOperation;
 import org.ligoj.app.plugin.vm.model.VmStatus;
+import org.ligoj.app.plugin.vmazure.AzureNic.AzureIpConfiguration;
+import org.ligoj.app.plugin.vmazure.AzureNic.AzureIpConfigurationProperties;
+import org.ligoj.app.plugin.vmazure.AzurePublicIp.AzureDns;
+import org.ligoj.app.plugin.vmazure.AzureVmList.AzureVmEntry;
+import org.ligoj.app.plugin.vmazure.AzureVmList.AzureVmNicRef;
 import org.ligoj.bootstrap.core.resource.BusinessException;
 import org.ligoj.bootstrap.core.security.SecurityHelper;
 import org.ligoj.bootstrap.core.validation.ValidationJsonException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import tools.jackson.databind.ObjectMapper;
 
 import javax.cache.annotation.CacheKey;
 import javax.cache.annotation.CacheResult;
@@ -74,7 +74,7 @@ public class VmAzurePluginResource extends AbstractAzureToolPluginResource imple
 	public static final String VM_URL = COMPUTE_URL + "/{vm}?$expand=instanceView&api-version={apiVersion}";
 
 	/**
-	 * The managed VM name, not the VM identifier (vmid). Note that VM identifier cannot be used to filter resources...
+	 * The managed VM name, not the VM identifier "vmid". Note that VM identifier cannot be used to filter resources...
 	 * Nevertheless, both ID and name can be used to find a VM during the subscription.
 	 */
 	public static final String PARAMETER_VM = KEY + ":name";
@@ -180,7 +180,7 @@ public class VmAzurePluginResource extends AbstractAzureToolPluginResource imple
 	 */
 	private static void registerOperation(final VmStatus status, final VmOperation operation,
 			final VmOperation operationFailSafe) {
-		FAILSAFE_OPERATIONS.computeIfAbsent(status, s -> new EnumMap<>(VmOperation.class));
+		FAILSAFE_OPERATIONS.computeIfAbsent(status, _ -> new EnumMap<>(VmOperation.class));
 		FAILSAFE_OPERATIONS.get(status).put(operation, operationFailSafe);
 	}
 
@@ -199,6 +199,7 @@ public class VmAzurePluginResource extends AbstractAzureToolPluginResource imple
 	 * @see <a href="https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/virtualmachines-state">State</a>
 	 */
 	private static final Map<String, VmStatus> CODE_TO_STATUS = new HashMap<>();
+
 	static {
 		CODE_TO_STATUS.put("PowerState/running", VmStatus.POWERED_ON);
 		CODE_TO_STATUS.put("PowerState/starting", VmStatus.POWERED_ON);
@@ -251,13 +252,12 @@ public class VmAzurePluginResource extends AbstractAzureToolPluginResource imple
 	 * @param node     the node to be tested with given parameters.
 	 * @param criteria the search criteria. Case is insensitive.
 	 * @return virtual machines.
-	 * @throws IOException When Azure JSON read failed.
 	 */
 	@GET
 	@Path("{node:service:.+}/{criteria}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	public List<AzureVm> findAllByName(@PathParam("node") final String node,
-			@PathParam("criteria") final String criteria) throws IOException {
+			@PathParam("criteria") final String criteria) {
 		// Check the node exists
 		if (nodeRepository.findOneVisible(node, securityHelper.getLogin()) == null) {
 			return Collections.emptyList();
@@ -329,7 +329,7 @@ public class VmAzurePluginResource extends AbstractAzureToolPluginResource imple
 	public AzureVm getVmDetails(final Map<String, String> parameters) {
 		final var name = parameters.get(PARAMETER_VM);
 		try (var processor = new AzureCurlProcessor()) {
-			// Associate the oAuth token to the processor
+			// Associate the OAuth token to the processor
 			authenticate(parameters, processor);
 
 			// Get the VM data
@@ -409,11 +409,7 @@ public class VmAzurePluginResource extends AbstractAzureToolPluginResource imple
 	 * Parse the String and return a runtime exception whn is not a correct JSON.
 	 */
 	private <T> T readValue(final String json, final Class<T> clazz) {
-		try {
-			return objectMapper.readValue(json, clazz);
-		} catch (final IOException e) {
-			throw new IllegalArgumentException(e);
-		}
+		return objectMapper.readValue(json, clazz);
 	}
 
 	/**
@@ -421,9 +417,8 @@ public class VmAzurePluginResource extends AbstractAzureToolPluginResource imple
 	 *
 	 * @param parameters the space parameters.
 	 * @return Azure Virtual Machine description.
-	 * @throws IOException When Azure JSON read failed.
 	 */
-	protected AzureVmEntry getAzureVm(final Map<String, String> parameters) throws IOException {
+	protected AzureVmEntry getAzureVm(final Map<String, String> parameters) {
 
 		// Get all VMs and then filter by its name or id
 		final var name = parameters.get(PARAMETER_VM);
@@ -531,7 +526,7 @@ public class VmAzurePluginResource extends AbstractAzureToolPluginResource imple
 	 * @param status    The current status of the VM.
 	 * @param operation The requested operation.
 	 * @return The fail-safe operation suiting to the current status of the VM. Return <code>null</code> when the
-	 *         computed operation is irrelevant.
+	 * computed operation is irrelevant.
 	 */
 	protected VmOperation failSafeOperation(final VmStatus status, final VmOperation operation) {
 		return Optional.ofNullable(FAILSAFE_OPERATIONS.get(status)).map(m -> m.get(operation)).orElse(null);
