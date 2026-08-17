@@ -5,7 +5,7 @@ import { resolve } from 'path'
 // Pull the real host surface in for tests / dev. At runtime the browser
 // resolves @ligoj/host via the import map in index.html; the build keeps it
 // external. The host repo is a sibling of ligoj-plugins/.
-const HOST_SRC = resolve(__dirname, '../../../ligoj/app-ui/src/main/webapp/src')
+const HOST_SRC = resolve(import.meta.dirname, '../../../ligoj/app-ui/src/main/webapp/src')
 
 export default defineConfig({
   plugins: [vue()],
@@ -21,7 +21,7 @@ export default defineConfig({
   },
   build: {
     lib: {
-      entry: resolve(__dirname, 'src/index.js'),
+      entry: resolve(import.meta.dirname, 'src/index.js'),
       formats: ['es'],
       fileName: () => 'index.js',
     },
@@ -32,7 +32,7 @@ export default defineConfig({
       external: ['vue', 'vue-router', 'pinia', 'vuetify', '@ligoj/host'],
       output: { entryFileNames: 'index.js', assetFileNames: 'index.[ext]' },
     },
-    outDir: resolve(__dirname, '../src/main/resources/META-INF/resources/webjars/vm-azure/vue'),
+    outDir: resolve(import.meta.dirname, '../src/main/resources/META-INF/resources/webjars/vm-azure/vue'),
     emptyOutDir: true,
   },
   server: {
