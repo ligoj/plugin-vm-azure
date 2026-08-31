@@ -27,11 +27,10 @@ import org.ligoj.bootstrap.core.security.SecurityHelper;
 import org.ligoj.bootstrap.core.validation.ValidationJsonException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import tools.jackson.databind.ObjectMapper;
 
 import javax.cache.annotation.CacheKey;
 import javax.cache.annotation.CacheResult;
-import java.io.IOException;
+import tools.jackson.core.JacksonException;
 import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -231,9 +230,6 @@ public class VmAzurePluginResource extends AbstractAzureToolPluginResource imple
 	@Autowired
 	private NodeRepository nodeRepository;
 
-	@Autowired
-	private ObjectMapper objectMapper;
-
 	/**
 	 * Used for "this" and forcing proxying.
 	 */
@@ -278,9 +274,9 @@ public class VmAzurePluginResource extends AbstractAzureToolPluginResource imple
 			final String location) {
 		try {
 			return self.getInstanceSizes(azSub, location, parameters).getOrDefault(type, new VmSize(type));
-		} catch (final IOException ioe) {
+		} catch (final JacksonException je) {
 			// Unmanaged size for this subscription
-			log.info("Unmanaged VM size {} : {}", type, ioe.getMessage());
+			log.info("Unmanaged VM size {} : {}", type, je.getMessage());
 			return new VmSize(type);
 		}
 	}
@@ -540,11 +536,10 @@ public class VmAzurePluginResource extends AbstractAzureToolPluginResource imple
 	 * @param location   The target location, required by Azure web service
 	 * @param parameters The credentials parameters.
 	 * @return Instance sizes mapping from the name.
-	 * @throws IOException When Azure JSON read failed.
 	 */
 	@CacheResult(cacheName = "azure-sizes")
 	public Map<String, VmSize> getInstanceSizes(@CacheKey final String azSub, @CacheKey final String location,
-			final Map<String, String> parameters) throws IOException {
+			final Map<String, String> parameters) {
 		final var jsonSizes = getAzureResource(parameters,
 				SIZES_URL.replace("{subscriptionId}", azSub).replace("{location}", location));
 		return objectMapper.readValue(Objects.toString(jsonSizes, "{\"value\":[]}"), VmSizes.class).getValue()

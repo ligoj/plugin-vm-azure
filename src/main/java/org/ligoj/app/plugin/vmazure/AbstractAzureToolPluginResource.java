@@ -3,8 +3,6 @@
  */
 package org.ligoj.app.plugin.vmazure;
 
-import com.microsoft.aad.adal4j.AuthenticationContext;
-import com.microsoft.aad.adal4j.ClientCredential;
 import jakarta.ws.rs.HttpMethod;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -17,11 +15,11 @@ import org.ligoj.bootstrap.core.validation.ValidationJsonException;
 import org.ligoj.bootstrap.resource.system.configuration.ConfigurationResource;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.net.MalformedURLException;
+import tools.jackson.databind.ObjectMapper;
+
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 /**
  * The goal of this class is sharing some Azure utilities among multiple plug-ins. But, for now, there is no plug-in
@@ -63,7 +61,7 @@ public abstract class AbstractAzureToolPluginResource extends AbstractToolPlugin
 	/**
 	 * Default authority URL end-point as API token provider.
 	 */
-	public static final String DEFAULT_AUTHORITY = "https://login.windows.net/";
+	public static final String DEFAULT_AUTHORITY = "https://login.microsoftonline.com/";
 
 	/**
 	 * Management URL.
@@ -114,6 +112,9 @@ public abstract class AbstractAzureToolPluginResource extends AbstractToolPlugin
 	public static final String FIND_VM_URL = COMPUTE_URL + "?api-version={apiVersion}";
 
 	@Autowired
+	protected ObjectMapper objectMapper;
+
+	@Autowired
 	protected CurlCacheToken curlCacheToken;
 
 	@Autowired
@@ -141,47 +142,26 @@ public abstract class AbstractAzureToolPluginResource extends AbstractToolPlugin
 	}
 
 	/**
-	 * Get the Azure bearer token from the authority.
+	 * Get the Azure bearer token from the authority using the OAuth2 client credentials flow.
 	 */
 	private String getAccessTokenFromUserCredentials(final String tenant, final String principal, final String key) {
-		final var service = newExecutorService();
-		try {
-			final var context = newAuthenticationContext(tenant, service);
-			/*
-			 * Replace {client_id} with ApplicationID and {password} with password that were used to create Service
-			 * Principal above.
-			 */
-			final var credential = new ClientCredential(principal, key);
-			return context.acquireToken(getManagementUrl(), credential, null).get().getAccessToken();
-		} catch (final ExecutionException | InterruptedException | MalformedURLException e) {
+		try (var curl = new CurlProcessor()) {
+			final var request = new CurlRequest("POST", getAuthority() + tenant + "/oauth2/v2.0/token",
+					"grant_type=client_credentials"
+							+ "&client_id=" + URLEncoder.encode(StringUtils.trimToEmpty(principal), StandardCharsets.UTF_8)
+							+ "&client_secret=" + URLEncoder.encode(key, StandardCharsets.UTF_8)
+							+ "&scope=" + URLEncoder.encode(getManagementUrl() + ".default", StandardCharsets.UTF_8));
+			request.setSaveResponse(true);
+			if (curl.process(request)) {
+				return objectMapper.readTree(request.getResponse()).path("access_token").asString(null);
+			}
+			log.info("Azure authentication failed for tenant {} and principal {} with status {}", tenant, principal,
+					request.getStatus());
+		} catch (final Exception e) {
 			// Authentication failed
 			log.info("Azure authentication failed for tenant {} and principal {}", tenant, principal, e);
-		} finally {
-			service.shutdown();
 		}
 		return null;
-	}
-
-	/**
-	 * Create and return a new executor pool service.
-	 *
-	 * @return A new executor pool service.
-	 */
-	protected ExecutorService newExecutorService() {
-		return Executors.newFixedThreadPool(1);
-	}
-
-	/**
-	 * Create a new {@link AuthenticationContext}
-	 *
-	 * @param tenant  The tenant identifier.
-	 * @param service executor service.
-	 * @return the new authenticated context.
-	 * @throws MalformedURLException When authority URL cannot be read.
-	 */
-	protected AuthenticationContext newAuthenticationContext(final String tenant, final ExecutorService service)
-			throws MalformedURLException {
-		return new AuthenticationContext(getAuthority() + tenant, true, service);
 	}
 
 	/**

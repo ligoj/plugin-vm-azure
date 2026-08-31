@@ -3,9 +3,6 @@
  */
 package org.ligoj.app.plugin.vmazure;
 
-import com.microsoft.aad.adal4j.AuthenticationContext;
-import com.microsoft.aad.adal4j.AuthenticationResult;
-import com.microsoft.aad.adal4j.ClientCredential;
 import jakarta.transaction.Transactional;
 import org.apache.commons.io.IOUtils;
 import org.apache.hc.core5.http.HttpStatus;
@@ -25,11 +22,8 @@ import org.ligoj.bootstrap.core.resource.BusinessException;
 import org.ligoj.bootstrap.core.security.RbacUserDetails;
 import org.ligoj.bootstrap.core.validation.ValidationJsonException;
 import org.ligoj.bootstrap.resource.system.configuration.ConfigurationResource;
-import org.mockito.ArgumentMatchers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.task.TaskExecutor;
-import org.springframework.core.task.support.ExecutorServiceAdapter;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
@@ -40,13 +34,9 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static org.mockito.Mockito.*;
@@ -88,7 +78,7 @@ class VmAzurePluginResourceTest extends AbstractServerTest {
 		Assertions.assertEquals("service:vm:azure", resource.getKey());
 
 		configuration.put("service:vm:azure:management", "http://localhost:" + MOCK_PORT + "/");
-		configuration.put("service:vm:azure:authority", "https://localhost:" + MOCK_PORT + "/");
+		configuration.put("service:vm:azure:authority", "http://localhost:" + MOCK_PORT + "/");
 
 		// Invalidate azure cache
 		cacheManager.getCache("curl-tokens").clear();
@@ -119,7 +109,6 @@ class VmAzurePluginResourceTest extends AbstractServerTest {
 
 		// Invoke create for an already created entity, since for now, there is
 		// nothing but validation pour SonarQube
-		final var resource = newResource();
 		resource.link(this.subscription);
 
 		// Nothing to validate for now...
@@ -130,7 +119,6 @@ class VmAzurePluginResourceTest extends AbstractServerTest {
 		prepareMockAuth();
 		httpServer.start();
 
-		final var resource = newResource();
 		final var parameters = pvResource.getNodeParameters("service:vm:azure:test");
 		parameters.put(VmAzurePluginResource.PARAMETER_VM, "0");
 		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class,
@@ -143,7 +131,6 @@ class VmAzurePluginResourceTest extends AbstractServerTest {
 
 		final var parameters = pvResource.getNodeParameters("service:vm:azure:test");
 		parameters.put(VmAzurePluginResource.PARAMETER_VM, "test1");
-		final var resource = newResource();
 		final var vm = resource.getVmDetails(parameters);
 		checkItem(vm);
 	}
@@ -170,7 +157,6 @@ class VmAzurePluginResourceTest extends AbstractServerTest {
 	@Test
 	void checkSubscriptionStatus() throws Exception {
 		prepareMockVm();
-		final var resource = newResource();
 		final var nodeStatusWithData = resource.checkSubscriptionStatus(subscription, null,
 				subscriptionResource.getParametersNoCheck(subscription));
 		Assertions.assertTrue(nodeStatusWithData.getStatus().isUp());
@@ -198,7 +184,6 @@ class VmAzurePluginResourceTest extends AbstractServerTest {
 								StandardCharsets.UTF_8))));
 		httpServer.start();
 
-		final var resource = newResource();
 		final var nodeStatusWithData = resource.checkSubscriptionStatus(subscription, null,
 				subscriptionResource.getParametersNoCheck(subscription));
 		Assertions.assertTrue(nodeStatusWithData.getStatus().isUp());
@@ -220,8 +205,7 @@ class VmAzurePluginResourceTest extends AbstractServerTest {
 				.willReturn(aResponse().withStatus(HttpStatus.SC_OK).withBody("<html>")));
 		httpServer.start();
 
-		final var resource = newResource();
-		Assertions.assertThrows(IllegalArgumentException.class, () -> resource.checkSubscriptionStatus(subscription, null,
+		Assertions.assertThrows(tools.jackson.core.JacksonException.class, () -> resource.checkSubscriptionStatus(subscription, null,
 				subscriptionResource.getParametersNoCheck(subscription)));
 	}
 
@@ -254,7 +238,6 @@ class VmAzurePluginResourceTest extends AbstractServerTest {
 
 		httpServer.start();
 
-		final var resource = newResource();
 		final var nodeStatusWithData = resource.checkSubscriptionStatus(subscription, null,
 				subscriptionResource.getParametersNoCheck(subscription));
 		Assertions.assertTrue(nodeStatusWithData.getStatus().isUp());
@@ -289,7 +272,6 @@ class VmAzurePluginResourceTest extends AbstractServerTest {
 						StandardCharsets.UTF_8))));
 		httpServer.start();
 
-		final var resource = newResource();
 		final var nodeStatusWithData = resource.checkSubscriptionStatus(subscription, null,
 				subscriptionResource.getParametersNoCheck(subscription));
 		Assertions.assertTrue(nodeStatusWithData.getStatus().isUp());
@@ -319,7 +301,6 @@ class VmAzurePluginResourceTest extends AbstractServerTest {
 				.willReturn(aResponse().withStatus(HttpStatus.SC_OK).withBody("///DUMMY")));
 		httpServer.start();
 
-		final var resource = newResource();
 		final var nodeStatusWithData = resource.checkSubscriptionStatus(subscription, null,
 				subscriptionResource.getParametersNoCheck(subscription));
 		Assertions.assertTrue(nodeStatusWithData.getStatus().isUp());
@@ -332,7 +313,7 @@ class VmAzurePluginResourceTest extends AbstractServerTest {
 	}
 
 	private void prepareMockAuth() throws IOException {
-		httpServer.stubFor(get(urlPathEqualTo("/11112222-3333-4444-5555-666677778888"))
+		httpServer.stubFor(post(urlPathEqualTo("/11112222-3333-4444-5555-666677778888/oauth2/v2.0/token"))
 				.willReturn(aResponse().withStatus(HttpStatus.SC_OK)
 						.withBody(IOUtils.toString(
 								new ClassPathResource("mock-server/azure/authentication-oauth.json").getInputStream(),
@@ -390,51 +371,7 @@ class VmAzurePluginResourceTest extends AbstractServerTest {
 	@Test
 	void checkStatus() throws Exception {
 		prepareMockFindAll();
-		Assertions.assertTrue(newResource().checkStatus(subscriptionResource.getParametersNoCheck(subscription)));
-	}
-
-	private VmAzurePluginResource newResource() throws InterruptedException, ExecutionException, MalformedURLException {
-		return newResource(newExecutorService());
-	}
-
-	private ExecutorService newExecutorService() {
-		final var taskExecutor = mock(TaskExecutor.class);
-		return new ExecutorServiceAdapter(taskExecutor) {
-
-			@Override
-			public void shutdown() {
-				// Do nothing
-			}
-		};
-
-	}
-
-	private VmAzurePluginResource newResource(final ExecutorService service)
-			throws InterruptedException, ExecutionException, MalformedURLException {
-		var resource = new VmAzurePluginResource();
-		applicationContext.getAutowireCapableBeanFactory().autowireBean(resource);
-		resource = spy(resource);
-		final var context = mock(AuthenticationContext.class);
-		@SuppressWarnings("unchecked") final Future<AuthenticationResult> future = mock(Future.class);
-		final var result = new AuthenticationResult("-token-", "-token-", "-token-", 10000, "-token-", null, true);
-		doReturn(result).when(future).get();
-		doReturn(future).when(context).acquireToken(ArgumentMatchers.anyString(),
-				ArgumentMatchers.any(ClientCredential.class), ArgumentMatchers.any());
-		doReturn(context).when(resource).newAuthenticationContext("11112222-3333-4444-5555-666677778888",
-				service);
-		doReturn(service).when(resource).newExecutorService();
-		return resource;
-	}
-
-	private VmAzurePluginResource newResourceFailed() throws MalformedURLException {
-		final var service = newExecutorService();
-		var resource = new VmAzurePluginResource();
-		applicationContext.getAutowireCapableBeanFactory().autowireBean(resource);
-		resource = spy(resource);
-		doThrow(IllegalStateException.class).when(resource)
-				.newAuthenticationContext("11112222-3333-4444-5555-666677778888", service);
-		doReturn(service).when(resource).newExecutorService();
-		return resource;
+		Assertions.assertTrue(resource.checkStatus(subscriptionResource.getParametersNoCheck(subscription)));
 	}
 
 	/**
@@ -447,36 +384,31 @@ class VmAzurePluginResourceTest extends AbstractServerTest {
 	}
 
 	/**
-	 * Authority error, client side
+	 * Authority rejects the credentials
 	 */
 	@Test
 	void checkStatusAuthorityError() {
-		Assertions.assertThrows(IllegalStateException.class,
-				() -> newResourceFailed().checkStatus(subscriptionResource.getParametersNoCheck(subscription)));
+		httpServer.stubFor(post(urlPathEqualTo("/11112222-3333-4444-5555-666677778888/oauth2/v2.0/token"))
+				.willReturn(aResponse().withStatus(HttpStatus.SC_BAD_REQUEST)));
+		httpServer.start();
+		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class,
+				() -> resource.checkStatus(subscriptionResource.getParametersNoCheck(subscription))), AbstractAzureToolPluginResource.PARAMETER_KEY, "azure-login");
 	}
 
 	/**
 	 * Authority is valid, but the token cannot be acquired
 	 */
 	@Test
-	void checkStatusShutdownFailed() throws Exception {
-		prepareMockAuth();
+	void checkStatusNoToken() {
+		httpServer.stubFor(post(urlPathEqualTo("/11112222-3333-4444-5555-666677778888/oauth2/v2.0/token"))
+				.willReturn(aResponse().withStatus(HttpStatus.SC_OK).withBody("{}")));
 		httpServer.start();
-		final var taskExecutor = mock(TaskExecutor.class);
-		final var resource = newResource(new ExecutorServiceAdapter(taskExecutor) {
-
-			@Override
-			public void shutdown() {
-				throw new IllegalStateException();
-			}
-		});
-		Assertions.assertThrows(IllegalStateException.class,
-				() -> resource.checkStatus(subscriptionResource.getParametersNoCheck(subscription)));
+		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class,
+				() -> resource.checkStatus(subscriptionResource.getParametersNoCheck(subscription))), AbstractAzureToolPluginResource.PARAMETER_KEY, "azure-login");
 	}
 
 	@Test
 	void checkStatusNotAccess() throws Exception {
-		final var resource = newResource();
 		prepareMockAuth();
 		httpServer.start();
 		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class,
@@ -524,7 +456,6 @@ class VmAzurePluginResourceTest extends AbstractServerTest {
 	void findAllByName() throws Exception {
 		initSpringSecurityContextAdmin(DEFAULT_USER);
 		prepareMockFindAll();
-		final var resource = newResource();
 		final var projects = resource.findAllByName("service:vm:azure:test", "est"); // "=test1"
 		Assertions.assertEquals(2, projects.size());
 		checkItem(projects.getFirst());
@@ -534,7 +465,6 @@ class VmAzurePluginResourceTest extends AbstractServerTest {
 	void findAllByNameNotFound() throws Exception {
 		initSpringSecurityContextAdmin(DEFAULT_USER);
 		prepareMockFindAll();
-		final var resource = newResource();
 		final var projects = resource.findAllByName("service:vm:azure:test", "any");
 		Assertions.assertEquals(0, projects.size());
 	}
@@ -543,7 +473,6 @@ class VmAzurePluginResourceTest extends AbstractServerTest {
 	void findAllByNameNotVisible() throws Exception {
 		initSpringSecurityContext("any");
 		prepareMockFindAll();
-		final var resource = newResource();
 		final var projects = resource.findAllByName("service:vm:azure:test", "est"); // "=test1"
 		Assertions.assertEquals(0, projects.size());
 	}
@@ -551,7 +480,6 @@ class VmAzurePluginResourceTest extends AbstractServerTest {
 	@Test
 	void execute() throws Exception {
 		prepareMockVm();
-		final var resource = newResource();
 		httpServer.stubFor(post(urlPathEqualTo(COMPUTE_URL + "/test1/powerOff"))
 				.willReturn(aResponse().withStatus(HttpStatus.SC_OK)));
 
@@ -574,7 +502,7 @@ class VmAzurePluginResourceTest extends AbstractServerTest {
 		prepareMockVm();
 
 		// Nothing to do
-		newResource().execute(newExecution(subscription, VmOperation.SUSPEND));
+		resource.execute(newExecution(subscription, VmOperation.SUSPEND));
 	}
 
 	/**
@@ -586,7 +514,6 @@ class VmAzurePluginResourceTest extends AbstractServerTest {
 		prepareMockVm();
 
 		// But execution, failed : not mocked execution URL
-		final var resource = newResource();
 		Assertions.assertEquals("vm-operation-execute", Assertions.assertThrows(BusinessException.class,
 				() -> resource.execute(newExecution(subscription, VmOperation.OFF))).getMessage());
 	}
@@ -598,7 +525,7 @@ class VmAzurePluginResourceTest extends AbstractServerTest {
 	void executeUselessAction() throws Exception {
 		// VM is found : is ON
 		prepareMockVm();
-		newResource().execute(newExecution(subscription, VmOperation.ON));
+		resource.execute(newExecution(subscription, VmOperation.ON));
 	}
 
 	/**
