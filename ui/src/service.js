@@ -20,7 +20,7 @@
  *
  * Kept free of Vue SFC imports so it can be unit-tested without a DOM.
  */
-import { renderServiceLink, renderDetailsChip, useI18nStore } from '@ligoj/host'
+import { renderServiceLink, renderDetailsChip, useI18nStore, remoteSearchField } from '@ligoj/host'
 
 const PARAM_SUBSCRIPTION = 'service:vm:azure:subscription'
 const PARAM_RESOURCE_GROUP = 'service:vm:azure:resource-group'
@@ -62,4 +62,16 @@ function renderDetailsKey(subscription) {
   return renderDetailsChip({ icon: 'mdi-microsoft-azure', text: name, title: t('service:vm:azure:name') })
 }
 
-export default { renderFeatures, renderDetailsKey }
+// Subscribe-wizard input: the virtual machines of the selected instance, searched as the user types
+const VmField = remoteSearchField({ path: 'rest/service/vm/azure' })
+
+/**
+ * Subscribe-wizard hook: `service:vm:azure:name` is picked among the virtual machines.
+ * Null for every other parameter and when editing a node: the default
+ * type-based input is rendered.
+ */
+function parameterField({ parameter, isNode } = {}) {
+  return !isNode && parameter?.id === PARAM_NAME ? VmField : null
+}
+
+export default { renderFeatures, renderDetailsKey, parameterField }

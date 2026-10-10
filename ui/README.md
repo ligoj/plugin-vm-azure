@@ -12,6 +12,7 @@ This is a **tool-level** plugin — see the host's `app-ui/REWRITE_VUEJS.md`
   subscribe wizard's auto-rendered parameter form.
 - **`renderFeatures`** — a deep link to this VM in the Azure portal.
 - **`renderDetailsKey`** — a chip showing the VM name.
+- **`parameterField`** — the subscribe wizard's VM search.
 
 It declares `requires: ['vm']`; the parent `plugin-vm` merges the row
 features above into its subscription rows via its delegation hook
