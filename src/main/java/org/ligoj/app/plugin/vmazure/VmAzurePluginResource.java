@@ -237,7 +237,7 @@ public class VmAzurePluginResource extends AbstractAzureToolPluginResource imple
 	protected VmAzurePluginResource self;
 
 	@Override
-	public void link(final int subscription) throws Exception {
+	public void link(final int subscription) {
 		// Validate the virtual machine name
 		getAzureVm(subscriptionResource.getParameters(subscription));
 	}
